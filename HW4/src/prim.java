@@ -57,12 +57,17 @@ public class prim {
         brcFactor = calculateBranchingFactor(n,m);
         
 
+        // Reading edges given on the input
         while (scanner.hasNext()) {
-
+        	
+        	//First vertex of edge
         	int a = scanner.nextInt();
+        	//Second vertex of edge
         	int b = scanner.nextInt();
+        	//Weight of the edge
         	int w = scanner.nextInt();
 
+        	//Filling adjacency matrix 
         	adjMatrix[a][b] = w;
         }
 

@@ -25,6 +25,9 @@ public class prim {
 	//branching factor
 	static int brcFactor = -1;
 	
+	//Array to locate vertices in the heap
+	static int[] vertexLocations = null;
+	
 	//Scanner to read the input
 	private static Scanner scanner;
 	
@@ -44,13 +47,17 @@ public class prim {
         if (scanner.hasNextInt()) {
         	n = scanner.nextInt();
         }
-        System.out.println(n);
+        
         // The second number in the stream is the number of edges
         if (scanner.hasNextInt()) {
         	m = scanner.nextInt();
         }
-		System.out.println(m);
+		
+        //Initializing the adjacency matrix
         adjMatrix = new int[n][n];
+        
+        //Initializing array of vertices locations
+        vertexLocations = new int[n];
         
         // Calculating branching factor
         // based number of vertices and edges from input
@@ -87,7 +94,35 @@ public class prim {
 	
 	
 	
-	///////////////////////////////////// Start of heap inner class from homework 2 //////////////////////////////////////////
+	
+	///////////////////////////////////////// Vertex inner class from homework 2 //////////////////////////////////////////
+	public class Vertex {
+	    private int id = -1;
+	    //Log base 2 of the branching factor (used to speed up the calculations of the indexes of the parent/children)
+	    private int weight = -1;
+	    //counter to track the number of key comparisons
+	    private Vertex parent = null;
+	    //Flag	    
+	    private boolean partOfSpanningTree = false;
+	}
+	
+	
+	
+	
+	
+
+	///////////////////////////////////////// Tree inner class from homework 2 //////////////////////////////////////////
+	public class Tree {
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	///////////////////////////////////////// Heap inner class from homework 2 //////////////////////////////////////////
 	
 	
 	/**

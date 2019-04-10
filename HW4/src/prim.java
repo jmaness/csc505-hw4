@@ -94,13 +94,17 @@ public class prim {
 	
 	
 	
+	////////////////////////////////////////////////// Prim's algorithm ///////////////////////////////////////////////////
+	public prim(int[][] adjMatrix) {
+		
+	}
 	
 	///////////////////////////////////////// Vertex inner class from homework 2 //////////////////////////////////////////
 	public class Vertex {
 	    private int id = -1;
 	    //Log base 2 of the branching factor (used to speed up the calculations of the indexes of the parent/children)
 	    private int weight = -1;
-	    //counter to track the number of key comparisons
+	    //Parent of this vertex
 	    private Vertex parent = null;
 	    //Flag	    
 	    private boolean partOfSpanningTree = false;

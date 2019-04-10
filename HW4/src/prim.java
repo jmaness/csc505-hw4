@@ -99,18 +99,150 @@ public class prim {
 		
 	}
 	
+	//////////////////////////////////////////////////Graph ///////////////////////////////////////////////////
+	public class Graph {
+		
+		private ArrayList<Set<Neighbor>> adjList = new ArrayList<Set<Neighbor>>();
+		private Set<Vertex> vertices = new HashSet<Vertex>();
+		
+		
+		public Set<Neighbor> getAdjVertices(int u) {
+			return adjList.get(u);
+		}
+		
+		public int getEdgeWeight(int u, int v) {
+			for (Neighbor n : adjList.get(u)) {
+				if (n.getVertexID() == v) {
+					return n.getEdgeWeight();
+				}
+			}
+			return -1;
+		}
+		
+		
+	}
+	
 	///////////////////////////////////////// Vertex inner class from homework 2 //////////////////////////////////////////
 	public class Vertex {
-	    private int id = -1;
-	    //Log base 2 of the branching factor (used to speed up the calculations of the indexes of the parent/children)
-	    private int weight = -1;
-	    //Parent of this vertex
-	    private Vertex parent = null;
-	    //Flag	    
-	    private boolean partOfSpanningTree = false;
+		
+		private int id = -1;
+		//Log base 2 of the branching factor (used to speed up the calculations of the indexes of the parent/children)
+		private int distance = -1;
+		//Parent of this vertex
+		private Vertex parent = null;
+		//Flag	    
+		private boolean partOfSpanningTree = false;
+		
+		
+		private Vertex (int id, int distance, Vertex parent, boolean partOfSpanningTree) {
+			setID(id);
+			setDistance(distance);
+			setParent(parent);
+			setMSPFlag(partOfSpanningTree);
+		}
+		
+		public void setID(int id) {
+			this.id = id;
+		}
+		
+		public void setDistance(int distance) {
+			this.distance = distance;
+		}
+		
+		public void setParent(Vertex parent) {
+			this.parent = parent;
+		}
+		
+		public void setMSPFlag(boolean partOfSpanningTree) {
+			this.partOfSpanningTree = partOfSpanningTree;
+		}
+		
+		public int getID() {
+			return this.id;
+		}
+		
+		public int getDistance() {
+			return this.distance;
+		}
+		
+		public Vertex getParent() {
+			return this.parent;
+		}
+		
+		public boolean getMSPFlag() {
+			return this.partOfSpanningTree;
+		}
+	}
+	
+
+	////////////////////////////////////////////////// Neighbor (Adjacency list nodes) ///////////////////////////////////////////////////
+	public class Neighbor {
+		int vertexID = -1;
+		int edgeWeight = -1;
+		
+		private Neighbor(int vertexID, int edgeWeight) {
+			setVertexID(vertexID);
+			setEdgeWeight(edgeWeight);
+		}
+		
+		public void setVertexID(int vertexID) {
+			this.vertexID = vertexID;
+		}
+		
+		public void setEdgeWeight(int edgeWeight) {
+			this.edgeWeight = edgeWeight;
+		}
+		
+		public int getVertexID() {
+			return this.vertexID;
+		}
+		
+		public int getEdgeWeight() {
+			return this.edgeWeight;
+		}
+		
+		/* (non-Javadoc)
+		* @see java.lang.Object#hashCode()
+		*/
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + getEnclosingInstance().hashCode();
+			result = prime * result + edgeWeight;
+			result = prime * result + vertexID;
+			return result;
+		}
+		
+		/* (non-Javadoc)
+		* @see java.lang.Object#equals(java.lang.Object)
+		*/
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (!(obj instanceof Neighbor))
+				return false;
+				Neighbor other = (Neighbor) obj;
+			if (!getEnclosingInstance().equals(other.getEnclosingInstance()))
+				return false;
+			if (edgeWeight != other.edgeWeight)
+				return false;
+			if (vertexID != other.vertexID)
+				return false;
+			return true;
+		}
+		
+		private prim getEnclosingInstance() {
+			return prim.this;
+		}
+	
 	}
 	
 	
+
 	
 	
 	

@@ -87,7 +87,7 @@ public class prim {
 	 * @return branching factor
 	 */
 	public static int calculateBranchingFactor(int vertices, int edges) {
-		return (int) Math.pow(2, Math.ceil(Math.log((float) 6/9) / Math.log(2)));
+		return (int) Math.pow(2, Math.ceil(Math.log((float) edges / vertices) / Math.log(2)));
 	}
 	
 	

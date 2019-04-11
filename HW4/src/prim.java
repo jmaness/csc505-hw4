@@ -14,7 +14,7 @@ public class prim {
 
     // Global variables 
     //Adjacency matrix
-    static int[][] adjMatrix = null;
+    static Graph g = null;
     
     //Number of vertices
     static int n = -1;
@@ -54,7 +54,7 @@ public class prim {
         }
         
         //Initializing the adjacency matrix
-        adjMatrix = new int[n][n];
+        //adjMatrix = new int[n][n];
         
         //Initializing array of vertices locations
         vertexLocations = new int[n];
@@ -63,7 +63,9 @@ public class prim {
         // based number of vertices and edges from input
         brcFactor = calculateBranchingFactor(n,m);
         
-
+        ArrayList<Set<Neighbor>> adjList = new ArrayList<Set<Neighbor>>();
+        Set<Vertex> vertices = new HashSet<Vertex>();
+        
         // Reading edges given on the input
         while (scanner.hasNext()) {
             //First vertex of edge
@@ -73,9 +75,13 @@ public class prim {
             //Weight of the edge
             int w = scanner.nextInt();
 
-            //Filling adjacency matrix 
-            adjMatrix[a][b] = w;
+            
+            vertices.add(new Vertex(a, -1, null, false));
+            vertices.add(new Vertex(b, -1, null, false));
+            adjList.get(a).add(new Neighbor(b, w));
         }
+        
+        g = new Graph(adjList, vertices);
 
     }
     
@@ -86,7 +92,7 @@ public class prim {
      * @return branching factor
      */
     public static int calculateBranchingFactor(int vertices, int edges) {
-        return (int) Math.pow(2, Math.ceil(Math.log((float) 6/9) / Math.log(2)));
+        return (int) Math.pow(2, Math.ceil(Math.log((float) edges/vertices) / Math.log(2)));
     }
     
     
@@ -94,17 +100,34 @@ public class prim {
     
     
     ////////////////////////////////////////////////// Prim's algorithm ///////////////////////////////////////////////////
-    public prim(int[][] adjMatrix) {
+    public void prim(Graph g, int weight, Vertex root) {
+    	
+    	heap priorityQueue = new heap(brcFactor);
+    	
+    	
         
+    	
     }
     
     //////////////////////////////////////////////////Graph ///////////////////////////////////////////////////
-    public class Graph {
+    static class Graph {
         
         private ArrayList<Set<Neighbor>> adjList = new ArrayList<Set<Neighbor>>();
         private Set<Vertex> vertices = new HashSet<Vertex>();
         
+        private Graph(ArrayList<Set<Neighbor>> adjList, Set<Vertex> vertices) {
+        	setAdjList(adjList);
+        	setVertices(vertices);
+        }
         
+        public void setAdjList(ArrayList<Set<Neighbor>> adjList) {
+        	this.adjList = adjList;
+        }
+        
+    	public void setVertices(Set<Vertex> vertices) {
+    		this.vertices = vertices;
+    	}
+    	
         public Set<Neighbor> getAdjVertices(int u) {
             return adjList.get(u);
         }
@@ -122,7 +145,7 @@ public class prim {
     }
     
     ///////////////////////////////////////// Vertex inner class from homework 2 //////////////////////////////////////////
-    public class Vertex {
+    static class Vertex {
         
         private int id = -1;
         //Log base 2 of the branching factor (used to speed up the calculations of the indexes of the parent/children)
@@ -171,11 +194,41 @@ public class prim {
         public boolean getMSPFlag() {
             return this.partOfSpanningTree;
         }
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + id;
+			return result;
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (!(obj instanceof Vertex))
+				return false;
+			Vertex other = (Vertex) obj;
+			if (id != other.id)
+				return false;
+			return true;
+		}
+        
+        
     }
     
 
     ////////////////////////////////////////////////// Neighbor (Adjacency list nodes) ///////////////////////////////////////////////////
-    public class Neighbor {
+    static class Neighbor {
         int vertexID = -1;
         int edgeWeight = -1;
         
@@ -201,42 +254,37 @@ public class prim {
         }
         
         /* (non-Javadoc)
-        * @see java.lang.Object#hashCode()
-        */
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + getEnclosingInstance().hashCode();
-            result = prime * result + edgeWeight;
-            result = prime * result + vertexID;
-            return result;
-        }
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + edgeWeight;
+			result = prime * result + vertexID;
+			return result;
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (!(obj instanceof Neighbor))
+				return false;
+			Neighbor other = (Neighbor) obj;
+			if (edgeWeight != other.edgeWeight)
+				return false;
+			if (vertexID != other.vertexID)
+				return false;
+			return true;
+		}
         
-        /* (non-Javadoc)
-        * @see java.lang.Object#equals(java.lang.Object)
-        */
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (!(obj instanceof Neighbor))
-                return false;
-                Neighbor other = (Neighbor) obj;
-            if (!getEnclosingInstance().equals(other.getEnclosingInstance()))
-                return false;
-            if (edgeWeight != other.edgeWeight)
-                return false;
-            if (vertexID != other.vertexID)
-                return false;
-            return true;
-        }
         
-        private prim getEnclosingInstance() {
-            return prim.this;
-        }
     
     }
     

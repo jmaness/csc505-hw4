@@ -12,47 +12,47 @@ import java.util.*;
  */
 public class prim {
 
-	// Global variables 
-	//Adjacency matrix
-	static int[][] adjMatrix = null;
-	
-	//Number of vertices
-	static int n = -1;
-	
-	//Number of edges
-	static int m = -1;
-	
-	//branching factor
-	static int brcFactor = -1;
-	
-	//Array to locate vertices in the heap
-	static int[] vertexLocations = null;
-	
-	//Scanner to read the input
-	private static Scanner scanner;
-	
-	
-	/**
-	 * Reads input file and fill up the adjacency matrix.
-	 * Calculates branching factor
-	 * 
-	 * @param args arguments on user input
-	 */
-	public static void main(String[] args) {
-		
-		// Reading input
-		scanner = new Scanner(System.in);
+    // Global variables 
+    //Adjacency matrix
+    static int[][] adjMatrix = null;
+    
+    //Number of vertices
+    static int n = -1;
+    
+    //Number of edges
+    static int m = -1;
+    
+    //branching factor
+    static int brcFactor = -1;
+    
+    //Array to locate vertices in the heap
+    static int[] vertexLocations = null;
+    
+    //Scanner to read the input
+    private static Scanner scanner;
+    
+    
+    /**
+     * Reads input file and fill up the adjacency matrix.
+     * Calculates branching factor
+     * 
+     * @param args arguments on user input
+     */
+    public static void main(String[] args) {
+        
+        // Reading input
+        scanner = new Scanner(System.in);
 
         // The first number in the stream is the number of vertices
         if (scanner.hasNextInt()) {
-        	n = scanner.nextInt();
+            n = scanner.nextInt();
         }
         
         // The second number in the stream is the number of edges
         if (scanner.hasNextInt()) {
-        	m = scanner.nextInt();
+            m = scanner.nextInt();
         }
-		
+        
         //Initializing the adjacency matrix
         adjMatrix = new int[n][n];
         
@@ -66,64 +66,187 @@ public class prim {
 
         // Reading edges given on the input
         while (scanner.hasNext()) {
-        	
-        	//First vertex of edge
-        	int a = scanner.nextInt();
-        	//Second vertex of edge
-        	int b = scanner.nextInt();
-        	//Weight of the edge
-        	int w = scanner.nextInt();
+            //First vertex of edge
+            int a = scanner.nextInt();
+            //Second vertex of edge
+            int b = scanner.nextInt();
+            //Weight of the edge
+            int w = scanner.nextInt();
 
-        	//Filling adjacency matrix 
-        	adjMatrix[a][b] = w;
+            //Filling adjacency matrix 
+            adjMatrix[a][b] = w;
         }
 
-	}
-	
-	/**
-	 * Calculates the branch factor given the number of vertices and the number of edges
-	 * @param vertices Number of vertices
-	 * @param edges Number of edges
-	 * @return branching factor
-	 */
-	private int calculateBranchingFactor(int vertices, int edges) {
-		return (int) Math.pow(2, Math.ceil(Math.log((float) edges / vertices) / Math.log(2)));
-	}
-	
-	
-	
-	
-	
-	////////////////////////////////////////////////// Prim's algorithm ///////////////////////////////////////////////////
-	public prim(int[][] adjMatrix) {
-		
-	}
-	
-	///////////////////////////////////////// Vertex inner class from homework 2 //////////////////////////////////////////
-	public class Vertex {
-	    private int id = -1;
-	    //Log base 2 of the branching factor (used to speed up the calculations of the indexes of the parent/children)
-	    private int weight = -1;
-	    //Parent of this vertex
-	    private Vertex parent = null;
-	    //Flag	    
-	    private boolean partOfSpanningTree = false;
-	}
-	
-	
-	
-	
-	
+    }
+    
+    /**
+     * Calculates the branch factor given the number of vertices and the number of edges
+     * @param vertices Number of vertices
+     * @param edges Number of edges
+     * @return branching factor
+     */
+    public static int calculateBranchingFactor(int vertices, int edges) {
+        return (int) Math.pow(2, Math.ceil(Math.log((float) 6/9) / Math.log(2)));
+    }
+    
+    
+    
+    
+    
+    ////////////////////////////////////////////////// Prim's algorithm ///////////////////////////////////////////////////
+    public prim(int[][] adjMatrix) {
+        
+    }
+    
+    //////////////////////////////////////////////////Graph ///////////////////////////////////////////////////
+    public class Graph {
+        
+        private ArrayList<Set<Neighbor>> adjList = new ArrayList<Set<Neighbor>>();
+        private Set<Vertex> vertices = new HashSet<Vertex>();
+        
+        
+        public Set<Neighbor> getAdjVertices(int u) {
+            return adjList.get(u);
+        }
+        
+        public int getEdgeWeight(int u, int v) {
+            for (Neighbor n : adjList.get(u)) {
+                if (n.getVertexID() == v) {
+                    return n.getEdgeWeight();
+                }
+            }
+            return -1;
+        }
+        
+        
+    }
+    
+    ///////////////////////////////////////// Vertex inner class from homework 2 //////////////////////////////////////////
+    public class Vertex {
+        
+        private int id = -1;
+        //Log base 2 of the branching factor (used to speed up the calculations of the indexes of the parent/children)
+        private int distance = -1;
+        //Parent of this vertex
+        private Vertex parent = null;
+        //Flag        
+        private boolean partOfSpanningTree = false;
+        
+        
+        private Vertex (int id, int distance, Vertex parent, boolean partOfSpanningTree) {
+            setID(id);
+            setDistance(distance);
+            setParent(parent);
+            setMSPFlag(partOfSpanningTree);
+        }
+        
+        public void setID(int id) {
+            this.id = id;
+        }
+        
+        public void setDistance(int distance) {
+            this.distance = distance;
+        }
+        
+        public void setParent(Vertex parent) {
+            this.parent = parent;
+        }
+        
+        public void setMSPFlag(boolean partOfSpanningTree) {
+            this.partOfSpanningTree = partOfSpanningTree;
+        }
+        
+        public int getID() {
+            return this.id;
+        }
+        
+        public int getDistance() {
+            return this.distance;
+        }
+        
+        public Vertex getParent() {
+            return this.parent;
+        }
+        
+        public boolean getMSPFlag() {
+            return this.partOfSpanningTree;
+        }
+    }
+    
 
-	///////////////////////////////////////// Tree inner class from homework 2 //////////////////////////////////////////
-	public class Tree {
-		
-	}
-	
-	
-	
-	
-	
+    ////////////////////////////////////////////////// Neighbor (Adjacency list nodes) ///////////////////////////////////////////////////
+    public class Neighbor {
+        int vertexID = -1;
+        int edgeWeight = -1;
+        
+        private Neighbor(int vertexID, int edgeWeight) {
+            setVertexID(vertexID);
+            setEdgeWeight(edgeWeight);
+        }
+        
+        public void setVertexID(int vertexID) {
+            this.vertexID = vertexID;
+        }
+        
+        public void setEdgeWeight(int edgeWeight) {
+            this.edgeWeight = edgeWeight;
+        }
+        
+        public int getVertexID() {
+            return this.vertexID;
+        }
+        
+        public int getEdgeWeight() {
+            return this.edgeWeight;
+        }
+        
+        /* (non-Javadoc)
+        * @see java.lang.Object#hashCode()
+        */
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + getEnclosingInstance().hashCode();
+            result = prime * result + edgeWeight;
+            result = prime * result + vertexID;
+            return result;
+        }
+        
+        /* (non-Javadoc)
+        * @see java.lang.Object#equals(java.lang.Object)
+        */
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (!(obj instanceof Neighbor))
+                return false;
+                Neighbor other = (Neighbor) obj;
+            if (!getEnclosingInstance().equals(other.getEnclosingInstance()))
+                return false;
+            if (edgeWeight != other.edgeWeight)
+                return false;
+            if (vertexID != other.vertexID)
+                return false;
+            return true;
+        }
+        
+        private prim getEnclosingInstance() {
+            return prim.this;
+        }
+    
+    }
+    
+    
+
+    ///////////////////////////////////////// Tree inner class from homework 2 //////////////////////////////////////////
+    public class Tree {
+        
+    }
+
 	
 	
 	///////////////////////////////////////// Heap inner class from homework 2 //////////////////////////////////////////
@@ -317,62 +440,5 @@ public class prim {
 	        array.set(dest, array.get(src));
 	        array.set(src, tmp);
 	    }
-
-	    /**
-	    * Gets the branching factor entered by the user and create an array out of the values
-	    * from the file also entered by the user (read by file redirection).
-	    *
-	    * Prints error messages if the user entered more than one value for branching factor and
-	    * if the entered branching factor is not a power of 2.
-	    *
-	    * @param args array containing branching factor entered in the command line
-	    */
-	    public void createHeap(String[] args) {
-
-	    	if (args.length > 1) {
-	            System.err.println("usage: heap <branching factor>");
-	            System.exit(1);
-	        }
-
-	        int branchingFactor = args.length == 0 ? 2 : Integer.parseInt(args[0]);
-
-	        if (!isPow2(branchingFactor)) {
-	            System.err.println(String.format("Branching factor %s is not a factor of 2", branchingFactor));
-	            System.exit(2);
-	        }
-	        
-	        heap A = new heap(brcFactor);
-
-	        Scanner sc = new Scanner(System.in);
-	        while (sc.hasNextLine()) {
-	            String line = sc.nextLine();
-
-	            if (line.trim().equals("-1")) {
-	                Node min = A.removeMin();
-	                System.out.println(min);
-	            } else {
-	                // input has two integers
-	                int[] parts = Arrays.stream(line.split("\\s+"))
-	                        .mapToInt(Integer::parseInt)
-	                        .toArray();
-
-	                A.insertValue(new Node(parts[0], parts[1]));
-	            }
-	        }
-
-	        System.out.println("key comparisons: " + A.keyComparisons);
-	    }
-
-	    /**
-	     * Returns true if the specified integer is a power of 2
-	     * (i.e. there exists an integer, k, such that 2^k = val)
-	     *
-	     * @param val integer value
-	     * @return true if the specified integer is a power of 2
-	     */
-	    private boolean isPow2(int val) {
-	        return Integer.bitCount(val) == 1;
-	    }
-	}
-
-}
+    
+  }

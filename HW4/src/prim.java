@@ -314,10 +314,10 @@ public class prim {
     ///////////////////////////////////////// Heap inner class from homework 2 //////////////////////////////////////////
     
     
-    	
-	///////////////////////////////////////// Heap inner class from homework 2 //////////////////////////////////////////
-	
-	
+        
+    ///////////////////////////////////////// Heap inner class from homework 2 //////////////////////////////////////////
+    
+    
     /**
     * This class constructs and tests a min-heap in which the nodes can have an arbitrary number of children, as long
     *  as the number is a power of 2.
@@ -518,6 +518,6 @@ public class prim {
             vertexLocations[srcNode.value] = src;
             vertexLocations[srcNode.value] = dest;
         }
-	}
+    }
 
    }

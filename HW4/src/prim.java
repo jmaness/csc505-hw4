@@ -24,9 +24,7 @@ public class prim {
     
     //branching factor
     static int brcFactor = -1;
-    
-    //Array to locate vertices in the heap
-    static int[] vertexLocations = null;
+
     
     //Scanner to read the input
     private static Scanner scanner;
@@ -55,9 +53,6 @@ public class prim {
         
         //Initializing the adjacency matrix
         //adjMatrix = new int[n][n];
-        
-        //Initializing array of vertices locations
-        vertexLocations = new int[n];
         
         // Calculating branching factor
         // based number of vertices and edges from input
@@ -118,11 +113,6 @@ public class prim {
                     //}
             }
         }
-        
-        
-        
-        
-        
         
         
         
@@ -318,11 +308,16 @@ public class prim {
         
     }
 
+
     
     
     ///////////////////////////////////////// Heap inner class from homework 2 //////////////////////////////////////////
     
     
+    	
+	///////////////////////////////////////// Heap inner class from homework 2 //////////////////////////////////////////
+	
+	
     /**
     * This class constructs and tests a min-heap in which the nodes can have an arbitrary number of children, as long
     *  as the number is a power of 2.
@@ -339,6 +334,8 @@ public class prim {
         private int lgBranchingFactor;
         //counter to track the number of key comparisons
         private int keyComparisons = 0;
+
+        private ArrayList<Integer> vertexLocations = new ArrayList<>(n);
 
         /**
         * Heap constructor.
@@ -400,6 +397,8 @@ public class prim {
             }
             //Sets the node into the right index after finding the right position.
             array.set(i, node);
+
+            vertexLocations.set(node.value, i); 
         }
 
         /**
@@ -421,6 +420,9 @@ public class prim {
             //Calls the Heapify operation to reposition the new root into the 
             //right position
             minHeapify(0);
+            
+            vertexLocations.remove(min.value);
+            
             //Returns the previous smallest node that was stored
             return min;
         }
@@ -507,10 +509,15 @@ public class prim {
          * @param dest destination index
          */
         private void exchange(int src, int dest) {
-            Node tmp = array.get(dest);
-            array.set(dest, array.get(src));
-            array.set(src, tmp);
+            Node srcNode = array.get(src);
+            Node destNode = array.get(dest);
+
+            array.set(dest, srcNode);
+            array.set(src, destNode);
+
+            vertexLocations.set(srcNode.value, src);
+            vertexLocations.set(srcNode.value, dest);
         }
-    
-    }
-}
+	}
+
+   }

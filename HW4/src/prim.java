@@ -332,8 +332,6 @@ public class prim {
         private int heapSize = 0;
         //Log base 2 of the branching factor (used to speed up the calculations of the indexes of the parent/children)
         private int lgBranchingFactor;
-        //counter to track the number of key comparisons
-        private int keyComparisons = 0;
 
         private Integer[] vertexLocations = new Integer[n];
 
@@ -466,7 +464,6 @@ public class prim {
          * @return true if the key of node1 is greater than the key of node2
          */
         private boolean keysGreaterThan(Node node1, Node node2) {
-            keyComparisons++;
             return node1.key > node2.key;
         }
 
@@ -482,7 +479,6 @@ public class prim {
          * @return true if the key of node1 is less than the key of node2
          */
         private boolean keysLessThan(Node node1, Node node2) {
-            keyComparisons++;
             return node1.key < node2.key;
         }
 
@@ -546,5 +542,4 @@ public class prim {
             vertexLocations[srcNode.value] = dest;
         }
     }
-
 }

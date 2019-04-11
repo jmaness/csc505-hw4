@@ -515,7 +515,7 @@ public class prim {
             array.set(dest, srcNode);
             array.set(src, destNode);
 
-            vertexLocations[srcNode.value] = src;
+            vertexLocations[destNode.value] = src;
             vertexLocations[srcNode.value] = dest;
         }
     }

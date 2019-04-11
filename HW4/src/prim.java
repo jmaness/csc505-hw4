@@ -354,9 +354,9 @@ public class prim {
          */
         static class Node {
             //Key to be compared
-            private final int key;
+            private int key;
             //Value stored on the node
-            private final int value;
+            private int value;
 
             /**
              * Constructor
@@ -368,11 +368,27 @@ public class prim {
                 this.value = value;
             }
 
-            @Override
+            public int getKey() {
+                return key;
+            }
+
+            public void setKey(int key) {
+                this.key = key;
+            }
+
+            public int getValue() {
+                return value;
+            }
+
+            public void setValue(int value) {
+                this.value = value;
+            }
+
             /**
              * Override the toString of the Node class to format the string output
              * of a Node
              */
+            @Override
             public String toString() {
                 return String.format("%s %s", key, value);
             }
@@ -429,6 +445,13 @@ public class prim {
 
         public boolean contains(int vertexId) {
             return vertexLocations[vertexId] != null;
+        }
+
+        public void decreaseKey(int vertexId, int key) {
+            int nodeId = vertexLocations[vertexId];
+            Node node = array.get(nodeId);
+            node.setKey(key);
+            minHeapify(nodeId);
         }
 
         /**

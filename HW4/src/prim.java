@@ -90,7 +90,17 @@ public class prim {
         return (int) Math.pow(2, Math.ceil(Math.log((float) edges/vertices) / Math.log(2)));
     }
 
-
+    /**
+     * 
+     * @param g
+     * @param weight
+     * @param root
+     */
+    public static void run(Prim p) {
+    	for (Vertex v : g.getVertices()) {
+    		prim(g, -1, v);
+    	}
+    }
 
 
 

@@ -5,7 +5,7 @@ import java.util.*;
  * Outputs the the number of trees in the given list of edges and the total weight of all
  * the minimum-weight spanning trees in the forest, using Prim's algorithm with a heap as 
  * a priority queue.
- * 
+ *
  * @author Jeremy Maness
  * @author Gabriel Oliveira
  *
@@ -15,29 +15,29 @@ public class prim {
     // Global variables 
     //Adjacency matrix
     static Graph g = null;
-    
+
     //Number of vertices
     static int n = -1;
-    
+
     //Number of edges
     static int m = -1;
-    
+
     //branching factor
     static int brcFactor = -1;
 
-    
+
     //Scanner to read the input
     private static Scanner scanner;
-    
-    
+
+
     /**
      * Reads input file and fill up the adjacency matrix.
      * Calculates branching factor
-     * 
+     *
      * @param args arguments on user input
      */
     public static void main(String[] args) {
-        
+
         // Reading input
         scanner = new Scanner(System.in);
 
@@ -45,22 +45,22 @@ public class prim {
         if (scanner.hasNextInt()) {
             n = scanner.nextInt();
         }
-        
+
         // The second number in the stream is the number of edges
         if (scanner.hasNextInt()) {
             m = scanner.nextInt();
         }
-        
+
         //Initializing the adjacency matrix
         //adjMatrix = new int[n][n];
-        
+
         // Calculating branching factor
         // based number of vertices and edges from input
         brcFactor = calculateBranchingFactor(n,m);
-        
+
         ArrayList<Set<Neighbor>> adjList = new ArrayList<Set<Neighbor>>();
         Set<Vertex> vertices = new HashSet<Vertex>();
-        
+
         // Reading edges given on the input
         while (scanner.hasNext()) {
             //First vertex of edge
@@ -70,16 +70,16 @@ public class prim {
             //Weight of the edge
             int w = scanner.nextInt();
 
-            
+
             vertices.add(new Vertex(a, null, null, false));
             vertices.add(new Vertex(b, null, null, false));
             adjList.get(a).add(new Neighbor(b, w));
         }
-        
+
         g = new Graph(adjList, vertices);
 
     }
-    
+
     /**
      * Calculates the branch factor given the number of vertices and the number of edges
      * @param vertices Number of vertices
@@ -89,29 +89,30 @@ public class prim {
     public static int calculateBranchingFactor(int vertices, int edges) {
         return (int) Math.pow(2, Math.ceil(Math.log((float) edges/vertices) / Math.log(2)));
     }
-    
-    
-    
-    
-    
+
+
+
+
+
     ////////////////////////////////////////////////// Prim's algorithm ///////////////////////////////////////////////////
     public void prim(Graph g, int weight, Vertex root) {
-        
+
         heap priorityQueue = new heap(brcFactor);
-        
+
         root.setDistance(0);
         
         Vertex[] vertices = g.getVertices();
         for(Vertex v : vertices) {
             priorityQueue.insertValue(new prim.heap.Node(v.getDistance(), v.getID()));
         }
-        
+
         while (priorityQueue.heapSize != 0) {
             prim.heap.Node u = priorityQueue.removeMin();
+
                 for (Neighbor v : g.getAdjVertices(u.value)) {
                     
                     //Enter function that looks for v inside the heap on the if condition
-                    if (priorityQueue.contains(new prim.heap.Node(v.getVertexID(), 0)) && v.getEdgeWeight() < vertices[v.getVertexID()].getDistance()) {
+                    if (priorityQueue.contains(v.getVertexID()) && v.getEdgeWeight() < vertices[v.getVertexID()].getDistance()) {
                         vertices[v.getVertexID()].setParent(vertices[u.value]);
                         vertices[v.getVertexID()].setDistance(v.getEdgeWeight());
                         priorityQueue.decreaseKey(v.getVertexID(), v.getEdgeWeight());
@@ -119,14 +120,14 @@ public class prim {
                     }
             }
         }
-        
-        
-        
+
+
+
     }
-    
+
     //////////////////////////////////////////////////Graph ///////////////////////////////////////////////////
     static class Graph {
-        
+
         private ArrayList<Set<Neighbor>> adjList = new ArrayList<Set<Neighbor>>();
         private Vertex[] vertices = new Vertex[n];
         
@@ -134,17 +135,17 @@ public class prim {
             setAdjList(adjList);
             setVertices(vertices);
         }
-        
+
         public void setAdjList(ArrayList<Set<Neighbor>> adjList) {
             this.adjList = adjList;
         }
-        
+
         public void setVertices(Set<Vertex> vertices) {
             for (Vertex v : vertices) {
                 this.vertices[v.getID()] = v;
             }
         }
-        
+
         public Set<Neighbor> getAdjVertices(int u) {
             return adjList.get(u);
         }
@@ -152,7 +153,7 @@ public class prim {
         public Vertex[] getVertices(){
             return this.vertices;
         }
-        
+
         public int getEdgeWeight(int u, int v) {
             for (Neighbor n : adjList.get(u)) {
                 if (n.getVertexID() == v) {
@@ -161,13 +162,13 @@ public class prim {
             }
             return -1;
         }
-        
-        
+
+
     }
-    
+
     ///////////////////////////////////////// Vertex inner class from homework 2 //////////////////////////////////////////
     static class Vertex {
-        
+
         private Integer id = null;
         //Log base 2 of the branching factor (used to speed up the calculations of the indexes of the parent/children)
         private Integer distance = null;
@@ -175,43 +176,43 @@ public class prim {
         private Vertex parent = null;
         //Flag        
         private boolean partOfSpanningTree = false;
-        
-        
+
+
         private Vertex (Integer id, Integer distance, Vertex parent, boolean partOfSpanningTree) {
             setID(id);
             setDistance(distance);
             setParent(parent);
             setMSPFlag(partOfSpanningTree);
         }
-        
+
         public void setID(int id) {
             this.id = id;
         }
-        
+
         public void setDistance(int distance) {
             this.distance = distance;
         }
-        
+
         public void setParent(Vertex parent) {
             this.parent = parent;
         }
-        
+
         public void setMSPFlag(boolean partOfSpanningTree) {
             this.partOfSpanningTree = partOfSpanningTree;
         }
-        
+
         public int getID() {
             return this.id;
         }
-        
+
         public int getDistance() {
             return this.distance;
         }
-        
+
         public Vertex getParent() {
             return this.parent;
         }
-        
+
         public boolean getMSPFlag() {
             return this.partOfSpanningTree;
         }
@@ -243,37 +244,37 @@ public class prim {
                 return false;
             return true;
         }
-        
-        
+
+
     }
-    
+
 
     ////////////////////////////////////////////////// Neighbor (Adjacency list nodes) ///////////////////////////////////////////////////
     static class Neighbor {
         int vertexID = -1;
         int edgeWeight = -1;
-        
+
         private Neighbor(int vertexID, int edgeWeight) {
             setVertexID(vertexID);
             setEdgeWeight(edgeWeight);
         }
-        
+
         public void setVertexID(int vertexID) {
             this.vertexID = vertexID;
         }
-        
+
         public void setEdgeWeight(int edgeWeight) {
             this.edgeWeight = edgeWeight;
         }
-        
+
         public int getVertexID() {
             return this.vertexID;
         }
-        
+
         public int getEdgeWeight() {
             return this.edgeWeight;
         }
-        
+
         /* (non-Javadoc)
          * @see java.lang.Object#hashCode()
          */
@@ -304,35 +305,30 @@ public class prim {
                 return false;
             return true;
         }
-        
-        
-    
+
+
+
     }
-    
-    
+
+
 
     ///////////////////////////////////////// Tree inner class from homework 2 //////////////////////////////////////////
     public class Tree {
-        
+
     }
 
 
-    
-    
+
+
     ///////////////////////////////////////// Heap inner class from homework 2 //////////////////////////////////////////
-    
-    
-        
-    ///////////////////////////////////////// Heap inner class from homework 2 //////////////////////////////////////////
-    
-    
+
     /**
-    * This class constructs and tests a min-heap in which the nodes can have an arbitrary number of children, as long
-    *  as the number is a power of 2.
-    * The branching factor (number of children per node) is entered by the user as a command line parameter.
-    * The testing works by reading a file with values and keys, which will be entered by the user in the command line
-    *  when running the program, and the file will be read using file redirection.
-    */
+     * This class constructs and tests a min-heap in which the nodes can have an arbitrary number of children, as long
+     *  as the number is a power of 2.
+     * The branching factor (number of children per node) is entered by the user as a command line parameter.
+     * The testing works by reading a file with values and keys, which will be entered by the user in the command line
+     *  when running the program, and the file will be read using file redirection.
+     */
     static class heap {
         //array that will keep the values of the heap
         private ArrayList<Node> array = new ArrayList<>();
@@ -343,44 +339,60 @@ public class prim {
         //counter to track the number of key comparisons
         private int keyComparisons = 0;
 
-        private ArrayList<Integer> vertexLocations = new ArrayList<>(n);
+        private Integer[] vertexLocations = new Integer[n];
 
         /**
-        * Heap constructor.
-        * Initiates the branchingFactor field and the lgBranchingFactor field.
-        * branchingFactor is entered by the user and passed as a parameter from the
-        * main method.
-        */
+         * Heap constructor.
+         * Initiates the branchingFactor field and the lgBranchingFactor field.
+         * branchingFactor is entered by the user and passed as a parameter from the
+         * main method.
+         */
         private heap(int brcFactor) {
             this.lgBranchingFactor = (int) brcFactor;
         }
 
         /**
-        * Inner class for creation of the node.
-        * A Node object represents a node of the heap, and it is composed
-        * by the key and the value.
-        */
+         * Inner class for creation of the node.
+         * A Node object represents a node of the heap, and it is composed
+         * by the key and the value.
+         */
         static class Node {
             //Key to be compared
-            private final int key;
+            private int key;
             //Value stored on the node
-            private final int value;
+            private int value;
 
             /**
-            * Constructor
-            * Initiates the key and the value with information from the file
-            * entered by the user.
-            */
+             * Constructor
+             * Initiates the key and the value with information from the file
+             * entered by the user.
+             */
             Node(int key, int value) {
                 this.key = key;
                 this.value = value;
             }
 
-            @Override
+            public int getKey() {
+                return key;
+            }
+
+            public void setKey(int key) {
+                this.key = key;
+            }
+
+            public int getValue() {
+                return value;
+            }
+
+            public void setValue(int value) {
+                this.value = value;
+            }
+
             /**
-            * Override the toString of the Node class to format the string output
-            * of a Node
-            */
+             * Override the toString of the Node class to format the string output
+             * of a Node
+             */
+            @Override
             public String toString() {
                 return String.format("%s %s", key, value);
             }
@@ -388,14 +400,14 @@ public class prim {
 
         /**
          * Inserts the specified node into the heap at the correct position to maintain the min-heap property
-         * 
+         *
          * @param node Node to insert
          */
         private void insertValue(Node node) {
             heapSize++;
             //Add node to the end of the array
             array.add(node);
-            
+
             //Initiating from the bottom of the heap and going up, makes key comparisons to find the
             //right place to insert the given node.
             int i = heapSize - 1;
@@ -406,12 +418,12 @@ public class prim {
             //Sets the node into the right index after finding the right position.
             array.set(i, node);
 
-            vertexLocations.set(node.value, i); 
+            vertexLocations[node.value] = i;
         }
 
         /**
          * Removes and returns the node with the minimum key in the heap.
-         * 
+         *
          * @return node with the minimum key in the heap
          */
         private Node removeMin() {
@@ -419,7 +431,7 @@ public class prim {
             if (heapSize < 1) {
                 throw new IllegalStateException("heap underflow");
             }
-            
+
             //Stores the node with the smallest key in the heap (root)
             Node min = array.get(0);
             //Replace the root with the last node and decrease the heap size
@@ -428,11 +440,22 @@ public class prim {
             //Calls the Heapify operation to reposition the new root into the 
             //right position
             minHeapify(0);
-            
-            vertexLocations.remove(min.value);
-            
+
+            vertexLocations[min.value] = null;
+
             //Returns the previous smallest node that was stored
             return min;
+        }
+
+        public boolean contains(int vertexId) {
+            return vertexLocations[vertexId] != null;
+        }
+
+        public void decreaseKey(int vertexId, int key) {
+            int nodeId = vertexLocations[vertexId];
+            Node node = array.get(nodeId);
+            node.setKey(key);
+            minHeapify(nodeId);
         }
 
         /**
@@ -491,7 +514,7 @@ public class prim {
 
         /**
          * Returns the index of the parent for the child at the ith index in the heap.
-         * 
+         *
          * @param i index of child
          * @return the index of the parent
          */
@@ -523,9 +546,9 @@ public class prim {
             array.set(dest, srcNode);
             array.set(src, destNode);
 
-            vertexLocations.set(srcNode.value, src);
-            vertexLocations.set(srcNode.value, dest);
+            vertexLocations[destNode.value] = src;
+            vertexLocations[srcNode.value] = dest;
         }
     }
 
-   }
+}

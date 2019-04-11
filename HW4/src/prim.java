@@ -71,8 +71,8 @@ public class prim {
             int w = scanner.nextInt();
 
             
-            vertices.add(new Vertex(a, -1, null, false));
-            vertices.add(new Vertex(b, -1, null, false));
+            vertices.add(new Vertex(a, null, null, false));
+            vertices.add(new Vertex(b, null, null, false));
             adjList.get(a).add(new Neighbor(b, w));
         }
         
@@ -96,12 +96,26 @@ public class prim {
     
     ////////////////////////////////////////////////// Prim's algorithm ///////////////////////////////////////////////////
     public void prim(Graph g, int weight, Vertex root) {
-    	
-    	heap priorityQueue = new heap(brcFactor);
-    	
-    	
         
-    	
+        heap priorityQueue = new heap(brcFactor);
+        
+        root.setDistance(0);
+        
+        for(Vertex v : g.getVertices()) {
+            priorityQueue.insertValue(new prim.heap.Node(v.getDistance(), v.getID()));
+        }
+        
+        while (priorityQueue.heapSize != 0) {
+            prim.heap.Node u = priorityQueue.removeMin();
+                for (Neighbor v : g.getAdjVertices(u.value)) {
+                    //if () {
+                        
+                    //}
+            }
+        }
+        
+        
+        
     }
     
     //////////////////////////////////////////////////Graph ///////////////////////////////////////////////////
@@ -111,20 +125,24 @@ public class prim {
         private Set<Vertex> vertices = new HashSet<Vertex>();
         
         private Graph(ArrayList<Set<Neighbor>> adjList, Set<Vertex> vertices) {
-        	setAdjList(adjList);
-        	setVertices(vertices);
+            setAdjList(adjList);
+            setVertices(vertices);
         }
         
         public void setAdjList(ArrayList<Set<Neighbor>> adjList) {
-        	this.adjList = adjList;
+            this.adjList = adjList;
         }
         
-    	public void setVertices(Set<Vertex> vertices) {
-    		this.vertices = vertices;
-    	}
-    	
+        public void setVertices(Set<Vertex> vertices) {
+            this.vertices = vertices;
+        }
+        
         public Set<Neighbor> getAdjVertices(int u) {
             return adjList.get(u);
+        }
+        
+        public Set<Vertex> getVertices(){
+            return this.vertices;
         }
         
         public int getEdgeWeight(int u, int v) {
@@ -142,16 +160,16 @@ public class prim {
     ///////////////////////////////////////// Vertex inner class from homework 2 //////////////////////////////////////////
     static class Vertex {
         
-        private int id = -1;
+        private Integer id = null;
         //Log base 2 of the branching factor (used to speed up the calculations of the indexes of the parent/children)
-        private int distance = -1;
+        private Integer distance = null;
         //Parent of this vertex
         private Vertex parent = null;
         //Flag        
         private boolean partOfSpanningTree = false;
         
         
-        private Vertex (int id, int distance, Vertex parent, boolean partOfSpanningTree) {
+        private Vertex (Integer id, Integer distance, Vertex parent, boolean partOfSpanningTree) {
             setID(id);
             setDistance(distance);
             setParent(parent);
@@ -190,33 +208,33 @@ public class prim {
             return this.partOfSpanningTree;
         }
 
-		/* (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + id;
-			return result;
-		}
+        /* (non-Javadoc)
+         * @see java.lang.Object#hashCode()
+         */
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + id;
+            return result;
+        }
 
-		/* (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (!(obj instanceof Vertex))
-				return false;
-			Vertex other = (Vertex) obj;
-			if (id != other.id)
-				return false;
-			return true;
-		}
+        /* (non-Javadoc)
+         * @see java.lang.Object#equals(java.lang.Object)
+         */
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (!(obj instanceof Vertex))
+                return false;
+            Vertex other = (Vertex) obj;
+            if (id != other.id)
+                return false;
+            return true;
+        }
         
         
     }
@@ -249,35 +267,35 @@ public class prim {
         }
         
         /* (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + edgeWeight;
-			result = prime * result + vertexID;
-			return result;
-		}
+         * @see java.lang.Object#hashCode()
+         */
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + edgeWeight;
+            result = prime * result + vertexID;
+            return result;
+        }
 
-		/* (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (!(obj instanceof Neighbor))
-				return false;
-			Neighbor other = (Neighbor) obj;
-			if (edgeWeight != other.edgeWeight)
-				return false;
-			if (vertexID != other.vertexID)
-				return false;
-			return true;
-		}
+        /* (non-Javadoc)
+         * @see java.lang.Object#equals(java.lang.Object)
+         */
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (!(obj instanceof Neighbor))
+                return false;
+            Neighbor other = (Neighbor) obj;
+            if (edgeWeight != other.edgeWeight)
+                return false;
+            if (vertexID != other.vertexID)
+                return false;
+            return true;
+        }
         
         
     
@@ -290,8 +308,13 @@ public class prim {
         
     }
 
-	
-	
+
+    
+    
+    ///////////////////////////////////////// Heap inner class from homework 2 //////////////////////////////////////////
+    
+    
+    	
 	///////////////////////////////////////// Heap inner class from homework 2 //////////////////////////////////////////
 	
 	
@@ -302,7 +325,7 @@ public class prim {
     * The testing works by reading a file with values and keys, which will be entered by the user in the command line
     *  when running the program, and the file will be read using file redirection.
     */
-    public class heap {
+    static class heap {
         //array that will keep the values of the heap
         private ArrayList<Node> array = new ArrayList<>();
         //size of the heap
@@ -329,7 +352,7 @@ public class prim {
         * A Node object represents a node of the heap, and it is composed
         * by the key and the value.
         */
-        private class Node {
+        static class Node {
             //Key to be compared
             private final int key;
             //Value stored on the node
@@ -495,5 +518,6 @@ public class prim {
             vertexLocations[srcNode.value] = src;
             vertexLocations[srcNode.value] = dest;
         }
-    }
-}
+	}
+
+   }

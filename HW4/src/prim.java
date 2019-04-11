@@ -350,7 +350,7 @@ public class prim {
             //right position
             minHeapify(0);
             
-            vertexLocations.remove(min.value);
+            vertexLocations.set(min.value, null);
             
             //Returns the previous smallest node that was stored
             return min;

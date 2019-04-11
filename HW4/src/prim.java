@@ -101,16 +101,22 @@ public class prim {
         
         root.setDistance(0);
         
-        for(Vertex v : g.getVertices()) {
+        Vertex[] vertices = g.getVertices();
+        for(Vertex v : vertices) {
             priorityQueue.insertValue(new prim.heap.Node(v.getDistance(), v.getID()));
         }
         
         while (priorityQueue.heapSize != 0) {
             prim.heap.Node u = priorityQueue.removeMin();
                 for (Neighbor v : g.getAdjVertices(u.value)) {
-                    //if () {
+                    
+                    //Enter function that looks for v inside the heap on the if condition
+                    if (priorityQueue.contains(new prim.heap.Node(v.getVertexID(), 0)) && v.getEdgeWeight() < vertices[v.getVertexID()].getDistance()) {
+                        vertices[v.getVertexID()].setParent(vertices[u.value]);
+                        vertices[v.getVertexID()].setDistance(v.getEdgeWeight());
+                        priorityQueue.decreaseKey(v.getVertexID(), v.getEdgeWeight());
                         
-                    //}
+                    }
             }
         }
         
@@ -122,7 +128,7 @@ public class prim {
     static class Graph {
         
         private ArrayList<Set<Neighbor>> adjList = new ArrayList<Set<Neighbor>>();
-        private Set<Vertex> vertices = new HashSet<Vertex>();
+        private Vertex[] vertices = new Vertex[n];
         
         private Graph(ArrayList<Set<Neighbor>> adjList, Set<Vertex> vertices) {
             setAdjList(adjList);
@@ -134,14 +140,16 @@ public class prim {
         }
         
         public void setVertices(Set<Vertex> vertices) {
-            this.vertices = vertices;
+            for (Vertex v : vertices) {
+                this.vertices[v.getID()] = v;
+            }
         }
         
         public Set<Neighbor> getAdjVertices(int u) {
             return adjList.get(u);
         }
         
-        public Set<Vertex> getVertices(){
+        public Vertex[] getVertices(){
             return this.vertices;
         }
         
@@ -314,10 +322,10 @@ public class prim {
     ///////////////////////////////////////// Heap inner class from homework 2 //////////////////////////////////////////
     
     
-    	
-	///////////////////////////////////////// Heap inner class from homework 2 //////////////////////////////////////////
-	
-	
+        
+    ///////////////////////////////////////// Heap inner class from homework 2 //////////////////////////////////////////
+    
+    
     /**
     * This class constructs and tests a min-heap in which the nodes can have an arbitrary number of children, as long
     *  as the number is a power of 2.
@@ -518,6 +526,6 @@ public class prim {
             vertexLocations.set(srcNode.value, src);
             vertexLocations.set(srcNode.value, dest);
         }
-	}
+    }
 
    }

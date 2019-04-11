@@ -264,7 +264,7 @@ public class prim {
         //counter to track the number of key comparisons
         private int keyComparisons = 0;
 
-        private ArrayList<Integer> vertexLocations = new ArrayList<>(n);
+        private Integer[] vertexLocations = new Integer[n];
 
         /**
         * Heap constructor.
@@ -327,7 +327,7 @@ public class prim {
             //Sets the node into the right index after finding the right position.
             array.set(i, node);
 
-            vertexLocations.set(node.value, i); 
+            vertexLocations[node.value] = i;
         }
 
         /**
@@ -350,7 +350,7 @@ public class prim {
             //right position
             minHeapify(0);
             
-            vertexLocations.set(min.value, null);
+            vertexLocations[min.value] = null;
             
             //Returns the previous smallest node that was stored
             return min;
@@ -444,8 +444,8 @@ public class prim {
             array.set(dest, srcNode);
             array.set(src, destNode);
 
-            vertexLocations.set(srcNode.value, src);
-            vertexLocations.set(srcNode.value, dest);
+            vertexLocations[srcNode.value] = src;
+            vertexLocations[srcNode.value] = dest;
         }
     }
 }

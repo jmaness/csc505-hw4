@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Outputs the the number of trees in the given list of edges and the total weight of all
@@ -57,13 +58,11 @@ public class prim {
         int branchingFactor = calculateBranchingFactor(n, m);
 
         List<Set<Neighbor>> adjList = new ArrayList<>(n);
-        for (int i = 0; i < n; i++) {
-            adjList.add(null);
-        }
 
         Set<Vertex> vertices = new HashSet<>();
         for (int i = 0; i < n; i++) {
-            vertices.add(new Vertex(i, Integer.MAX_VALUE, null));
+            adjList.add(null);
+            vertices.add(new Vertex(i, Integer.MAX_VALUE));
         }
 
         // Reading edges given on the input
@@ -72,8 +71,8 @@ public class prim {
             int b = scanner.nextInt(); // Second vertex of edge
             int w = scanner.nextInt(); // Weight of the edge
 
-            vertices.add(new Vertex(a, Integer.MAX_VALUE, null));
-            vertices.add(new Vertex(b, Integer.MAX_VALUE, null));
+            vertices.add(new Vertex(a, Integer.MAX_VALUE));
+            vertices.add(new Vertex(b, Integer.MAX_VALUE));
 
             if (adjList.get(a) == null) {
                 adjList.set(a, new HashSet<>());
@@ -160,6 +159,10 @@ public class prim {
      * @return number of trees in the forest
      */
     private long calculateNumTrees(Graph g) {
+        System.out.println("Detected tree roots: " + Arrays.stream(g.vertices)
+                .filter(vertex -> vertex.parent == null)
+                .collect(Collectors.toList()));
+
         return Arrays.stream(g.vertices)
                 .filter(vertex -> vertex.parent == null)
                 .count();
@@ -211,10 +214,9 @@ public class prim {
         private Vertex parent;
         private boolean partOfSpanningTree;
 
-        private Vertex(Integer id, Integer distance, Vertex parent) {
+        private Vertex(Integer id, Integer distance) {
             this.id = id;
             this.distance = distance;
-            this.parent = parent;
         }
 
         @Override
@@ -228,6 +230,16 @@ public class prim {
         @Override
         public int hashCode() {
             return Objects.hash(id);
+        }
+
+        @Override
+        public String toString() {
+            return "Vertex{" +
+                    "id=" + id +
+                    ", distance=" + distance +
+                    ", parent=" + parent +
+                    ", partOfSpanningTree=" + partOfSpanningTree +
+                    '}';
         }
     }
 
@@ -243,6 +255,8 @@ public class prim {
             this.vertexId = vertexId;
             this.edgeWeight = edgeWeight;
         }
+
+
 
         @Override
         public int hashCode() {
@@ -336,17 +350,20 @@ public class prim {
             heapSize++;
             //Add node to the end of the array
             array.add(node);
+            vertexLocations[node.value] = array.size() - 1;
 
             //Initiating from the bottom of the heap and going up, makes key comparisons to find the
             //right place to insert the given node.
             int i = heapSize - 1;
             while (i > 0 && keysGreaterThan(array.get(parent(i)), node)) {
-                array.set(i, array.get(parent(i)));
+                Node parent = array.get(parent(i));
+                array.set(i, parent);
+                vertexLocations[parent.value] = i;
+
                 i = parent(i);
             }
             //Sets the node into the right index after finding the right position.
             array.set(i, node);
-
             vertexLocations[node.value] = i;
         }
 
@@ -367,10 +384,11 @@ public class prim {
             //Replace the root with the last node and decrease the heap size
             Node last = array.get(heapSize - 1);
             array.set(0, last);
-            heapSize--;
 
             vertexLocations[min.value] = null;
             vertexLocations[last.value] = 0;
+
+            heapSize--;
 
             //Calls the Heapify operation to reposition the new root into the 
             //right position
@@ -386,6 +404,11 @@ public class prim {
 
         void decreaseKey(int vertexId, int key) {
             int nodeId = vertexLocations[vertexId];
+            if (key > array.get(nodeId).key) {
+                return;
+                //throw new RuntimeException(String.format("new key is smaller than current key - old key: %s, new key: %s", array.get(nodeId).key, key));
+            }
+
             Node node = array.get(nodeId);
             node.key = key;
 

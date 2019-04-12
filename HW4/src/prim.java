@@ -1,10 +1,10 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Scanner;
 import java.util.Set;
-
-import static java.lang.Integer.MAX_VALUE;
 
 /**
  * Outputs the the number of trees in the given list of edges and the total weight of all
@@ -62,6 +62,9 @@ public class prim {
         }
 
         Set<Vertex> vertices = new HashSet<>();
+        for (int i = 0; i < n; i++) {
+            vertices.add(new Vertex(i, Integer.MAX_VALUE, null));
+        }
 
         // Reading edges given on the input
         while (scanner.hasNext()) {
@@ -72,13 +75,16 @@ public class prim {
             vertices.add(new Vertex(a, Integer.MAX_VALUE, null));
             vertices.add(new Vertex(b, Integer.MAX_VALUE, null));
 
-            Set<Neighbor> neighbors = adjList.get(a);
-
-            if (neighbors == null) {
+            if (adjList.get(a) == null) {
                 adjList.set(a, new HashSet<>());
             }
 
+            if (adjList.get(b) == null) {
+                adjList.set(b, new HashSet<>());
+            }
+
             adjList.get(a).add(new Neighbor(b, w));
+            adjList.get(b).add(new Neighbor(a, w));
         }
 
         Graph g = new Graph(adjList, vertices);
@@ -87,12 +93,13 @@ public class prim {
 
     /**
      * Calculates the branch factor given the number of vertices and the number of edges
+     *
      * @param vertices Number of vertices
      * @param edges Number of edges
      * @return branching factor
      */
     private static int calculateBranchingFactor(int vertices, int edges) {
-        return (int) Math.pow(2, Math.ceil(Math.log((float) edges/vertices) / Math.log(2)));
+        return Math.max(2, (int) Math.pow(2, Math.ceil(Math.log((float) edges / vertices) / Math.log(2))));
     }
 
     /**
@@ -106,8 +113,8 @@ public class prim {
             }
         }
 
-        int numTrees = calculateNumTrees();
-        int totalWeight = calculateTotalWeight();
+        long numTrees = calculateNumTrees(g);
+        long totalWeight = calculateTotalWeight(g);
 
         System.out.println(String.format("%s %s %s", branchingFactor, numTrees, totalWeight));
     }
@@ -121,6 +128,7 @@ public class prim {
     private void mstPrim(Graph g, Vertex root) {
         heap priorityQueue = new heap(branchingFactor, n);
         root.distance = 0;
+        root.partOfSpanningTree = true;
         
         Vertex[] vertices = g.getVertices();
         for(Vertex v : vertices) {
@@ -132,10 +140,11 @@ public class prim {
 
             Set<Neighbor> neighbors = g.getAdjVertices(u.value);
             if (neighbors != null) {
-                for (Neighbor v : g.getAdjVertices(u.value)) {
+                for (Neighbor v : neighbors) {
                     if (priorityQueue.contains(v.vertexId) && v.edgeWeight < vertices[v.vertexId].distance) {
                         vertices[v.vertexId].parent = vertices[u.value];
                         vertices[v.vertexId].distance = v.edgeWeight;
+                        vertices[v.vertexId].partOfSpanningTree = true;
                         priorityQueue.decreaseKey(v.vertexId, v.edgeWeight);
                     }
                 }
@@ -143,12 +152,23 @@ public class prim {
         }
     }
 
-    private int calculateNumTrees() {
-        return 0; // TODO
+    /**
+     * Counts the number of trees in the forest.
+     * The runtime complexity is O(n).
+     *
+     * @param g graph
+     * @return number of trees in the forest
+     */
+    private long calculateNumTrees(Graph g) {
+        return Arrays.stream(g.vertices)
+                .filter(vertex -> vertex.parent == null)
+                .count();
     }
 
-    private int calculateTotalWeight() {
-        return 0; // TODO
+    private long calculateTotalWeight(Graph g) {
+        return Arrays.stream(g.vertices)
+                .mapToLong(vertex -> vertex.distance)
+                .sum();
     }
 
     /**
@@ -197,32 +217,17 @@ public class prim {
             this.parent = parent;
         }
 
-        /* (non-Javadoc)
-         * @see java.lang.Object#hashCode()
-         */
         @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + id;
-            return result;
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Vertex vertex = (Vertex) o;
+            return Objects.equals(id, vertex.id);
         }
 
-        /* (non-Javadoc)
-         * @see java.lang.Object#equals(java.lang.Object)
-         */
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (!(obj instanceof Vertex))
-                return false;
-            Vertex other = (Vertex) obj;
-            if (id != other.id)
-                return false;
-            return true;
+        public int hashCode() {
+            return Objects.hash(id);
         }
     }
 
@@ -264,18 +269,6 @@ public class prim {
             return true;
         }
     }
-
-
-
-    ///////////////////////////////////////// Tree inner class from homework 2 //////////////////////////////////////////
-    public class Tree {
-
-    }
-
-
-
-
-    ///////////////////////////////////////// Heap inner class from homework 2 //////////////////////////////////////////
 
     /**
      * This class constructs and tests a min-heap in which the nodes can have
@@ -370,14 +363,18 @@ public class prim {
 
             //Stores the node with the smallest key in the heap (root)
             Node min = array.get(0);
+
             //Replace the root with the last node and decrease the heap size
-            array.set(0, array.get(heapSize - 1));
+            Node last = array.get(heapSize - 1);
+            array.set(0, last);
             heapSize--;
+
+            vertexLocations[min.value] = null;
+            vertexLocations[last.value] = 0;
+
             //Calls the Heapify operation to reposition the new root into the 
             //right position
             minHeapify(0);
-
-            vertexLocations[min.value] = null;
 
             //Returns the previous smallest node that was stored
             return min;
@@ -391,7 +388,12 @@ public class prim {
             int nodeId = vertexLocations[vertexId];
             Node node = array.get(nodeId);
             node.key = key;
-            minHeapify(nodeId);
+
+            int i = nodeId;
+            while (i > 0 && array.get(parent(i)).key > array.get(i).key) {
+                exchange(i, parent(i));
+                i = parent(i);
+            }
         }
 
         /**

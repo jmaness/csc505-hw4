@@ -62,6 +62,9 @@ public class prim {
         }
 
         Set<Vertex> vertices = new HashSet<>();
+        for (int i = 0; i < n; i++) {
+            vertices.add(new Vertex(i, Integer.MAX_VALUE, null));
+        }
 
         // Reading edges given on the input
         while (scanner.hasNext()) {
@@ -84,13 +87,13 @@ public class prim {
             adjList.get(b).add(new Neighbor(a, w));
         }
 
-        Graph g = new Graph(adjList, vertices, n);
+        Graph g = new Graph(adjList, vertices);
         new prim(g, n, m, branchingFactor).run();
     }
 
     /**
      * Calculates the branch factor given the number of vertices and the number of edges
-     * 
+     *
      * @param vertices Number of vertices
      * @param edges Number of edges
      * @return branching factor
@@ -105,7 +108,7 @@ public class prim {
      */
     private void run() {
         for (Vertex v : g.getVertices()) {
-            if (v != null && !v.partOfSpanningTree) {
+            if (!v.partOfSpanningTree) {
                 mstPrim(g, v);
             }
         }
@@ -129,9 +132,7 @@ public class prim {
         
         Vertex[] vertices = g.getVertices();
         for(Vertex v : vertices) {
-            if (v != null) {
-                priorityQueue.insertValue(new prim.heap.Node(v.distance, v.id));
-            }
+            priorityQueue.insertValue(new prim.heap.Node(v.distance, v.id));
         }
 
         while (priorityQueue.heapSize != 0) {
@@ -179,9 +180,9 @@ public class prim {
         private ArrayList<Set<Neighbor>> adjList;
         private Vertex[] vertices;
         
-        private Graph(List<Set<Neighbor>> adjList, Set<Vertex> vertices, int n) {
+        private Graph(List<Set<Neighbor>> adjList, Set<Vertex> vertices) {
             this.adjList = new ArrayList<>(adjList);
-            this.vertices = new Vertex[n];
+            this.vertices = new Vertex[vertices.size()];
 
             for (Vertex v : vertices) {
                 this.vertices[v.id] = v;
@@ -217,32 +218,17 @@ public class prim {
             this.parent = parent;
         }
 
-        /* (non-Javadoc)
-         * @see java.lang.Object#hashCode()
-         */
         @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + id;
-            return result;
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Vertex vertex = (Vertex) o;
+            return Objects.equals(id, vertex.id);
         }
 
-        /* (non-Javadoc)
-         * @see java.lang.Object#equals(java.lang.Object)
-         */
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (!(obj instanceof Vertex))
-                return false;
-            Vertex other = (Vertex) obj;
-            if (id != other.id)
-                return false;
-            return true;
+        public int hashCode() {
+            return Objects.hash(id);
         }
     }
 

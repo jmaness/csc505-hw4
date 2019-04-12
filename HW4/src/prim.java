@@ -95,9 +95,9 @@ public class prim {
      * @param p instance of prim object
      */
     public static void run(prim p) {
-    	for (Vertex v : g.getVertices()) {
-    		p.prim(g, -1, v);
-    	}
+        for (Vertex v : g.getVertices()) {
+            p.prim(g, -1, v);
+        }
     }
 
 

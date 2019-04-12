@@ -63,8 +63,8 @@ public class prim {
             int b = scanner.nextInt(); // Second vertex of edge
             int w = scanner.nextInt(); // Weight of the edge
 
-            vertices.add(new Vertex(a, null, null, false));
-            vertices.add(new Vertex(b, null, null, false));
+            vertices.add(new Vertex(a, null, null));
+            vertices.add(new Vertex(b, null, null));
 
             adjList.get(a).add(new Neighbor(b, w));
         }
@@ -103,29 +103,30 @@ public class prim {
      */
     private void mstPrim(Graph g, Vertex root) {
         heap priorityQueue = new heap(branchingFactor, n);
-        root.setDistance(0);
+        root.distance = 0;
         
         Vertex[] vertices = g.getVertices();
         for(Vertex v : vertices) {
-            priorityQueue.insertValue(new prim.heap.Node(v.getDistance(), v.getID()));
+            priorityQueue.insertValue(new prim.heap.Node(v.distance, v.id));
         }
 
         while (priorityQueue.heapSize != 0) {
             prim.heap.Node u = priorityQueue.removeMin();
 
             for (Neighbor v : g.getAdjVertices(u.value)) {
-
-                //Enter function that looks for v inside the heap on the if condition
-                if (priorityQueue.contains(v.getVertexID()) && v.getEdgeWeight() < vertices[v.getVertexID()].getDistance()) {
-                    vertices[v.getVertexID()].setParent(vertices[u.value]);
-                    vertices[v.getVertexID()].setDistance(v.getEdgeWeight());
-                    priorityQueue.decreaseKey(v.getVertexID(), v.getEdgeWeight());
+                if (priorityQueue.contains(v.vertexId) && v.edgeWeight < vertices[v.vertexId].distance) {
+                    vertices[v.vertexId].parent = vertices[u.value];
+                    vertices[v.vertexId].distance = v.edgeWeight;
+                    priorityQueue.decreaseKey(v.vertexId, v.edgeWeight);
                 }
             }
         }
     }
 
-    //////////////////////////////////////////////////Graph ///////////////////////////////////////////////////
+    /**
+     * Graph that uses an adjacency list representation
+     *
+     */
     static class Graph {
         private ArrayList<Set<Neighbor>> adjList;
         private Vertex[] vertices;
@@ -135,7 +136,7 @@ public class prim {
             this.vertices = new Vertex[vertices.size()];
 
             for (Vertex v : vertices) {
-                this.vertices[v.getID()] = v;
+                this.vertices[v.id] = v;
             }
         }
 
@@ -146,18 +147,15 @@ public class prim {
         Vertex[] getVertices(){
             return this.vertices;
         }
-
-        public int getEdgeWeight(int u, int v) {
-            for (Neighbor n : adjList.get(u)) {
-                if (n.getVertexID() == v) {
-                    return n.getEdgeWeight();
-                }
-            }
-            return -1;
-        }
     }
 
-    ///////////////////////////////////////// Vertex inner class from homework 2 //////////////////////////////////////////
+    /**
+     * Vertex that maintains:
+     *  - a minimum weight of any edge connecting v to any vertex in the spanning tree
+     *  - parent vertex in a spanning tree
+     *  - flag to indicate that the vertex is part of a spanning tree
+     *
+     */
     static class Vertex {
 
         private Integer id;
@@ -165,43 +163,10 @@ public class prim {
         private Vertex parent;
         private boolean partOfSpanningTree;
 
-        private Vertex (Integer id, Integer distance, Vertex parent, boolean partOfSpanningTree) {
-            setID(id);
-            setDistance(distance);
-            setParent(parent);
-            setMSPFlag(partOfSpanningTree);
-        }
-
-        void setID(int id) {
+        private Vertex (Integer id, Integer distance, Vertex parent) {
             this.id = id;
-        }
-
-        void setDistance(Integer distance) {
             this.distance = distance;
-        }
-
-        void setParent(Vertex parent) {
             this.parent = parent;
-        }
-
-        void setMSPFlag(boolean partOfSpanningTree) {
-            this.partOfSpanningTree = partOfSpanningTree;
-        }
-
-        int getID() {
-            return this.id;
-        }
-
-        public int getDistance() {
-            return this.distance;
-        }
-
-        public Vertex getParent() {
-            return this.parent;
-        }
-
-        public boolean getMSPFlag() {
-            return this.partOfSpanningTree;
         }
 
         /* (non-Javadoc)
@@ -233,48 +198,28 @@ public class prim {
         }
     }
 
-
-    ////////////////////////////////////////////////// Neighbor (Adjacency list nodes) ///////////////////////////////////////////////////
+    /**
+     * Neighbor (Adjacency List nodes)
+     *
+     */
     static class Neighbor {
-        int vertexID = -1;
-        int edgeWeight = -1;
+        private int vertexId;
+        private int edgeWeight;
 
-        private Neighbor(int vertexID, int edgeWeight) {
-            setVertexID(vertexID);
-            setEdgeWeight(edgeWeight);
-        }
-
-        void setVertexID(int vertexID) {
-            this.vertexID = vertexID;
-        }
-
-        void setEdgeWeight(int edgeWeight) {
+        private Neighbor(int vertexId, int edgeWeight) {
+            this.vertexId = vertexId;
             this.edgeWeight = edgeWeight;
         }
 
-        int getVertexID() {
-            return this.vertexID;
-        }
-
-        int getEdgeWeight() {
-            return this.edgeWeight;
-        }
-
-        /* (non-Javadoc)
-         * @see java.lang.Object#hashCode()
-         */
         @Override
         public int hashCode() {
             final int prime = 31;
             int result = 1;
             result = prime * result + edgeWeight;
-            result = prime * result + vertexID;
+            result = prime * result + vertexId;
             return result;
         }
 
-        /* (non-Javadoc)
-         * @see java.lang.Object#equals(java.lang.Object)
-         */
         @Override
         public boolean equals(Object obj) {
             if (this == obj)
@@ -286,7 +231,7 @@ public class prim {
             Neighbor other = (Neighbor) obj;
             if (edgeWeight != other.edgeWeight)
                 return false;
-            if (vertexID != other.vertexID)
+            if (vertexId != other.vertexId)
                 return false;
             return true;
         }

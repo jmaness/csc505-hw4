@@ -167,7 +167,6 @@ public class prim {
 
     private long calculateTotalWeight(Graph g) {
         return Arrays.stream(g.vertices)
-                .filter(Objects::nonNull)
                 .mapToLong(vertex -> vertex.distance)
                 .sum();
     }

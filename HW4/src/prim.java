@@ -96,9 +96,9 @@ public class prim {
      * @param weight
      * @param root
      */
-    public static void run(Prim p) {
+    public static void run(prim p) {
     	for (Vertex v : g.getVertices()) {
-    		prim(g, -1, v);
+    		p.prim(g, -1, v);
     	}
     }
 

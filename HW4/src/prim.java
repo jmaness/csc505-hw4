@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 
+import static java.lang.Integer.MAX_VALUE;
+
 /**
  * Outputs the the number of trees in the given list of edges and the total weight of all
  * the minimum-weight spanning trees in the forest, using Prim's algorithm with a heap as 
@@ -55,6 +57,10 @@ public class prim {
         int branchingFactor = calculateBranchingFactor(n, m);
 
         List<Set<Neighbor>> adjList = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            adjList.add(null);
+        }
+
         Set<Vertex> vertices = new HashSet<>();
 
         // Reading edges given on the input
@@ -63,8 +69,14 @@ public class prim {
             int b = scanner.nextInt(); // Second vertex of edge
             int w = scanner.nextInt(); // Weight of the edge
 
-            vertices.add(new Vertex(a, null, null));
-            vertices.add(new Vertex(b, null, null));
+            vertices.add(new Vertex(a, Integer.MAX_VALUE, null));
+            vertices.add(new Vertex(b, Integer.MAX_VALUE, null));
+
+            Set<Neighbor> neighbors = adjList.get(a);
+
+            if (neighbors == null) {
+                adjList.set(a, new HashSet<>());
+            }
 
             adjList.get(a).add(new Neighbor(b, w));
         }
@@ -113,11 +125,14 @@ public class prim {
         while (priorityQueue.heapSize != 0) {
             prim.heap.Node u = priorityQueue.removeMin();
 
-            for (Neighbor v : g.getAdjVertices(u.value)) {
-                if (priorityQueue.contains(v.vertexId) && v.edgeWeight < vertices[v.vertexId].distance) {
-                    vertices[v.vertexId].parent = vertices[u.value];
-                    vertices[v.vertexId].distance = v.edgeWeight;
-                    priorityQueue.decreaseKey(v.vertexId, v.edgeWeight);
+            Set<Neighbor> neighbors = g.getAdjVertices(u.value);
+            if (neighbors != null) {
+                for (Neighbor v : g.getAdjVertices(u.value)) {
+                    if (priorityQueue.contains(v.vertexId) && v.edgeWeight < vertices[v.vertexId].distance) {
+                        vertices[v.vertexId].parent = vertices[u.value];
+                        vertices[v.vertexId].distance = v.edgeWeight;
+                        priorityQueue.decreaseKey(v.vertexId, v.edgeWeight);
+                    }
                 }
             }
         }
@@ -163,7 +178,7 @@ public class prim {
         private Vertex parent;
         private boolean partOfSpanningTree;
 
-        private Vertex (Integer id, Integer distance, Vertex parent) {
+        private Vertex(Integer id, Integer distance, Vertex parent) {
             this.id = id;
             this.distance = distance;
             this.parent = parent;

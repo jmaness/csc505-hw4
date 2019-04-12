@@ -105,6 +105,11 @@ public class prim {
                 mstPrim(g, v);
             }
         }
+
+        int numTrees = calculateNumTrees();
+        int totalWeight = calculateTotalWeight();
+
+        System.out.println(String.format("%s %s %s", branchingFactor, numTrees, totalWeight));
     }
 
     /**
@@ -136,6 +141,14 @@ public class prim {
                 }
             }
         }
+    }
+
+    private int calculateNumTrees() {
+        return 0; // TODO
+    }
+
+    private int calculateTotalWeight() {
+        return 0; // TODO
     }
 
     /**

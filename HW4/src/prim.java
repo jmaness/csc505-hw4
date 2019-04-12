@@ -161,7 +161,7 @@ public class prim {
      */
     private long calculateNumTrees(Graph g) {
         return Arrays.stream(g.vertices)
-                .filter(vertex -> vertex != null && vertex.parent == null)
+                .filter(vertex -> vertex.parent == null)
                 .count();
     }
 

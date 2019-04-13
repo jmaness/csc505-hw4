@@ -1,3 +1,6 @@
+/*
+ * Import statements
+ */
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -15,11 +18,18 @@ import java.util.Set;
  * @author Gabriel Oliveira
  */
 public class prim {
-    private Graph g;
+    private Graph g; // Graph to run Prim's algorithm on
     private int n; // Number of vertices
     private int m; // Number of edges
-    private int branchingFactor;
+    private int branchingFactor; //Branching factor to use in the heap that will be used as a priority queue
 
+    /**
+     * Initializes the object used in the implementation
+     * @param g Graph to run Prim's algorithm on
+     * @param n Number of vertices in graph g
+     * @param m Number of edges in graph g
+     * @param branchingFactor // Branching factor based on n and m that will be used in the heap
+     */
     private prim(Graph g, int n, int m, int branchingFactor) {
         this.g = g;
         this.n = n;
@@ -28,14 +38,18 @@ public class prim {
     }
 
     /**
-     * Reads input file and fill up the adjacency matrix.
-     * Calculates branching factor
+     * Reads input file.
+     * Calculates branching factor.
+     * Fills up the adjacency list and sets of vertices from the given input file.
+     * Initialized the Graph object and runs the Prim's algorithm
      *
      * @param args arguments on user input
      */
     public static void main(String[] args) {
 
-        // Reading input
+        /*
+         * Reading input
+         */
         Scanner scanner = new Scanner(System.in);
 
         int n = -1;
@@ -56,9 +70,13 @@ public class prim {
          */
         int branchingFactor = calculateBranchingFactor(n, m);
 
+        /*
+         * Initializing and filling adjacency list and set of vertices from the graph
+         * using information from the input file
+         */
         List<Set<Neighbor>> adjList = new ArrayList<>(n);
-
         Set<Vertex> vertices = new HashSet<>();
+        
         for (int i = 0; i < n; i++) {
             adjList.add(null);
             vertices.add(new Vertex(i, Integer.MAX_VALUE));
@@ -85,8 +103,8 @@ public class prim {
             adjList.get(b).add(new Neighbor(a, w));
         }
 
-        Graph g = new Graph(adjList, vertices);
-        new prim(g, n, m, branchingFactor).run();
+        Graph g = new Graph(adjList, vertices); //Initializes graph
+        new prim(g, n, m, branchingFactor).run(); //Runs Prim's algorithm
     }
 
     /**
@@ -102,45 +120,71 @@ public class prim {
 
     /**
      * Executes the forest version of Prim's algorithm
-     *
+     * Calculates total number of trees in the forest and
+     * total weight across all trees.
+     * Prints output on the console.
      */
     private void run() {
+        
+        /*
+         * Running Prim's algorithms for every vertex that
+         * is not part of a spanning tree
+         */
         for (Vertex v : g.getVertices()) {
             if (!v.partOfSpanningTree) {
                 mstPrim(g, v);
             }
         }
 
-        long numTrees = calculateNumTrees(g);
-        long totalWeight = calculateTotalWeight(g);
+        long numTrees = calculateNumTrees(g); //Calculating number of trees
+        long totalWeight = calculateTotalWeight(g); //Calculating total weight of all trees
 
-        System.out.println(String.format("%s %s %s", branchingFactor, numTrees, totalWeight));
+        System.out.println(String.format("%s %s %s", branchingFactor, numTrees, totalWeight)); //Printing output
     }
 
     /**
-     * Prim's algorithm
+     * Prim's algorithm implementation
      *
-     * @param g Graph
+     * @param g Graph to run Prim's algorithm on
      * @param root root vertex to start Prim's algorithm
      */
     private void mstPrim(Graph g, Vertex root) {
+        
+        /*
+         * Initializing the priority queue.
+         * Setting given vertex as root of the tree.
+         */
         MinHeap priorityQueue = new MinHeap(branchingFactor, n);
         root.distance = 0;
         root.partOfSpanningTree = true;
 
-        priorityQueue.insertValue(new Pair(root.distance, root.id));
+        priorityQueue.insertValue(new Pair(root.distance, root.id)); //Inserting root int the priority queue
 
-        Vertex[] vertices = g.getVertices();
+        /*
+         * Creating array with all the vertices of graph g.
+         * This is done to be able to access the vertices in constant time
+         */
+        Vertex[] vertices = g.getVertices(); 
+        
+        /*
+         * Inserting each vertex that is not part of a spanning tree
+         * into the heap
+         */
         for(Vertex v : vertices) {
             if (!v.partOfSpanningTree) {
                 priorityQueue.insertValue(new Pair(v.distance, v.id));
             }
         }
 
+        /*
+         * While there are vertices in the heap, go through the adjacency list of the vertex u with the lowest key
+         * and change the parent, the edge weight and decrease the key of vertex v if the current edge eight is greater 
+         * than the distance between u and v.
+         */
         while (priorityQueue.n != 0) {
             Pair u = priorityQueue.removeMin();
-
             Set<Neighbor> neighbors = g.getAdjVertices(u.val);
+              
             if (neighbors != null) {
                 for (Neighbor v : neighbors) {
                     if (priorityQueue.contains(v.vertexId) && v.edgeWeight < vertices[v.vertexId].distance) {
@@ -167,6 +211,13 @@ public class prim {
                 .count();
     }
 
+    /**
+     * Counts the total weight across all trees in the forest.
+     * The runtime complexity is O(n).
+     *
+     * @param g graph
+     * @return total edge weight of the  forest
+     */
     private long calculateTotalWeight(Graph g) {
         return Arrays.stream(g.vertices)
                 .mapToLong(vertex -> vertex.distance)
@@ -178,22 +229,39 @@ public class prim {
      *
      */
     static class Graph {
-        private ArrayList<Set<Neighbor>> adjList;
-        private Vertex[] vertices;
+        private ArrayList<Set<Neighbor>> adjList; //Graph's adjacency list
+        private Vertex[] vertices; // Set of all the vertices in the graph
 
+        /**
+         * Initializes the grapph with given adjacency list and vertices
+         * @param adjList Adjacency list of all vertices in the graph
+         * @param vertices Given set of all vertices on the graph
+         */
         private Graph(List<Set<Neighbor>> adjList, Set<Vertex> vertices) {
             this.adjList = new ArrayList<>(adjList);
             this.vertices = new Vertex[vertices.size()];
 
+            /*
+             * Copying the given set of vertices into an array
+             */
             for (Vertex v : vertices) {
                 this.vertices[v.id] = v;
             }
         }
 
+        /**
+         * Returns adjacency list for a given vertex
+         * @param u Vertex to get the adjacency list from
+         * @return adjacency list of the given vertex
+         */
         Set<Neighbor> getAdjVertices(int u) {
             return adjList.get(u);
         }
 
+        /**
+         * Returns an array of Vertex objects containing all the vertices on the graph 
+         * @return all the vertices of the graph
+         */
         Vertex[] getVertices(){
             return this.vertices;
         }
@@ -208,16 +276,26 @@ public class prim {
      */
     static class Vertex {
 
-        private Integer id;
-        private Integer distance;
-        private Vertex parent;
-        private boolean partOfSpanningTree;
+        private Integer id; //Vertex ID
+        private Integer distance; //cost of the edge between this vertex and its parent
+        private Vertex parent; //Parent of this vertex in a tree
+        private boolean partOfSpanningTree; //Boolean flag to show if this vertex is part of a spanning tree 
 
+        /**
+         * Initializes this vertex object
+         * @param id ID for the vertex
+         * @param distance Distance between this vertex and its parent
+         */
         private Vertex(Integer id, Integer distance) {
             this.id = id;
             this.distance = distance;
         }
 
+        /**
+         * Compares this vertex with the given object
+         * @param o object to be compared
+         * @return True if o and this vertex are the same
+         */
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -226,6 +304,9 @@ public class prim {
             return Objects.equals(id, vertex.id);
         }
 
+        /**
+         * Vertex hash code
+         */
         @Override
         public int hashCode() {
             return Objects.hash(id);
@@ -233,18 +314,26 @@ public class prim {
     }
 
     /**
-     * Neighbor (Adjacency List nodes)
-     *
+     * Neighbor object
+     * It represents a vertex on the adjacency list of another vertex from the graph
      */
     static class Neighbor {
-        private int vertexId;
-        private int edgeWeight;
+        private int vertexId; //ID of this vertex
+        private int edgeWeight; //Weight on the edge between this vertex and its parent
 
+        /**
+         * Initializes this object
+         * @param vertexId ID for this vertex
+         * @param edgeWeight Weight on the edge between this vertex and its parent
+         */
         private Neighbor(int vertexId, int edgeWeight) {
             this.vertexId = vertexId;
             this.edgeWeight = edgeWeight;
         }
 
+        /**
+         * Neighbor hash code
+         */
         @Override
         public int hashCode() {
             final int prime = 31;
@@ -254,6 +343,11 @@ public class prim {
             return result;
         }
 
+        /**
+         * Compares this neighbor with the given object
+         * @param obj object to be compared
+         * @return True if obj and this neighbor are the same
+         */
         @Override
         public boolean equals(Object obj) {
             if (this == obj)
@@ -272,52 +366,71 @@ public class prim {
     }
 
 
-    // Key/value pair, used in the heap and its interface.
+    /**
+     * Key/value pair, used in the heap and its interface.
+     * @author Dr. Sturgill
+     */
     static class Pair {
-        public int key;
-        public int val;
+        public int key; //Key to organize the heap
+        public int val; //Value of the heap node
 
+        /**
+         * Initializes a pair with key and value
+         * @param k Given key
+         * @param v Given value
+         */
         public Pair( int k, int v ) {
             key = k;
             val = v;
         }
     }
 
-    // Actual representation of the heap
+    /**
+     * Actual representation of the heap.
+     * 
+     * @author Dr. Sturgill
+     * @author Jeremy Maness
+     */
     static class MinHeap {
-        // Counter of comparison operations, for comparing performance.
-        private long comparisons = 0;
+       
+        private long comparisons = 0; // Counter of comparison operations, for comparing performance.
+        private int p; // Power of 2 used as the branching factor
+        Pair[] tree; // Representation for the heap.
+        int n; // Number of elements in the heap.
+        int cap; // Capacity of the heap.
+        Integer[] vertexLocations; //array of vertices location to link vertices between the heap and the graph
 
-        // Power of 2 used as the branchign factor
-        private int p;
-
-        // Representation for the heap.
-        Pair[] tree;
-
-        // Number of elements in the heap.
-        int n;
-
-        // Capacity of the heap.
-        int cap;
-
-        Integer[] vertexLocations;
-
-        // Function to compare keys, so we can also count key comparisons.
+        /**
+         * Function to compare keys, so we can also count key comparisons.
+         * 
+         * @param a Heap node
+         * @param b Heap node
+         * @return True if the key of node a is less than the key of node b
+         */
         private boolean keyLess( Pair a, Pair b ) {
             comparisons += 1;
             return a.key < b.key;
         }
 
+        /**
+         * Initializes the heap
+         * @param p Power of 2 used as the branching factor
+         * @param numVertices Maximum number of vertices that can be stored in the heap
+         */
         public MinHeap( int p, int numVertices ) {
             this.p = p;
-            cap = 5;
-            n = 0;
-            tree = new Pair [ cap ];
+            cap = 5; //Initial capacity
+            n = 0; //Number of vertices
+            tree = new Pair [ cap ]; //Representation of the tree
             vertexLocations = new Integer[numVertices];
         }
 
+        /**
+         * Remove the minimum value from the heap and executes a heapify operation to reorganize the heap.
+         * @return the vertex with minimum key value of the heap
+         */
         Pair removeMin() {
-            // Remove the minimum value and replace it with the last one.
+            // 
             Pair v = tree[ 0 ];
             tree[ 0 ] = tree[ n - 1 ];
             n -= 1;
@@ -325,10 +438,14 @@ public class prim {
             vertexLocations[v.val] = null;
             vertexLocations[tree[0].val] = 0;
 
-            // We need the branching factor below.
+            /*
+             * We need the branching factor below.
+             */
             int branch = 1 << p;
 
-            // Push this value down until it satisfies the ordering constraint.
+            /*
+             * Push this value down until it satisfies the ordering constraint.
+             */
             int idx = 0;
             int child = ( idx << p ) + 1;
             while ( child < n ) {
@@ -341,12 +458,16 @@ public class prim {
                     if ( keyLess( tree[ i ], tree[ m ] ) )
                         m = i;
 
-                // Not happy about this early return.  Would be nice to ahve it in the condition
-                // on the loop.  Return early if we hit a point where we don't have to swap.
+                /*
+                 * Not happy about this early return.  Would be nice to have it in the condition
+                 * on the loop.  Return early if we hit a point where we don't have to swap.
+                 */
                 if ( ! keyLess( tree[ m ], tree[ idx ] ) )
                     return v;
 
-                // Swap the current vlaue with its smallest child
+                /*
+                 * Swap the current value with its smallest child
+                 */
                 Pair temp = tree[ idx ];
                 tree[ idx ] = tree[ m ];
                 tree[ m ] = temp;
@@ -354,7 +475,9 @@ public class prim {
                 vertexLocations[tree[idx].val] = idx;
                 vertexLocations[tree[m].val] = m;
 
-                // Follow the value down into the tree.
+                /*
+                 * Follow the value down into the tree.
+                 */
                 idx = m;
                 child = ( idx << p ) + 1;
             }
@@ -362,9 +485,19 @@ public class prim {
             return v;
         }
 
-        void insertValue( Pair v ) {
+        /**
+         * Insert the given vertex node into the heap and then perfomes a heapify operation to reorganize
+         * the heap
+         * @param v Vertex node
+         */
+        void insertValue(Pair v) {
+            
+            /*
+             * If the number of vertices in the graph is larger than the capacity of the heap
+             * creates a new tree representation with twice the original capacity, copy all
+             * the nodes to the new one and then replace the orginal one.
+             */
             if ( n >= cap ) {
-                // Enlarge the heap array and copy everything over.
                 cap *= 2;
                 Pair[] t2 = new Pair [ cap ];
                 for ( int i = 0; i < n; i++ )
@@ -372,14 +505,17 @@ public class prim {
                 tree = t2;
             }
 
-            // Put the new value at the end of the heap.
+            
+            /**
+             * Put the new value at the end of the heap.
+             */
             int idx = n;
             tree[ n ] = v;
             vertexLocations[tree[n].val] = n;
 
             n++;
 
-            // Move it up in the heap until it's as large as its parent.
+            //Move it up in the heap until it's as large as its parent.
             int par = ( idx - 1 ) >> p;
             while ( par >= 0 && keyLess( tree[ idx ], tree[ par ] ) ) {
                 // Swap this value with its parent.
@@ -395,11 +531,18 @@ public class prim {
             }
         }
 
-        /** Return the number of comparisons performed. */
+        /**
+         *  Return the number of comparisons performed.
+         */
         long ccount() {
             return comparisons;
         }
 
+        /**
+         * Decreases the key of the given vertex in the heap
+         * @param vertexId Given vertex ID
+         * @param key Original vertex key value
+         */
         void decreaseKey(int vertexId, int key) {
             Integer idx = vertexLocations[vertexId];
             Pair pair = tree[idx];
@@ -423,10 +566,20 @@ public class prim {
             }
         }
 
+        /**
+         * Search the heap for the given vertex
+         * @param vertexId ID of the vertex to search
+         * @return True if the vertex is in the heap
+         */
         boolean contains(int vertexId) {
             return vertexLocations[vertexId] != null;
         }
 
+        /**
+         * Returns the parent of the vertex with given index
+         * @param idx Vertex index
+         * @return Index of the parent
+         */
         int parent(int idx) {
             return (idx - 1) >> p;
         }

@@ -5,11 +5,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Outputs the the number of trees in the given list of edges and the total weight of all
- * the minimum-weight spanning trees in the forest, using Prim's algorithm with a heap as 
+ * the minimum-weight spanning trees in the forest, using Prim's algorithm with a heap as
  * a priority queue.
  *
  * @author Jeremy Maness
@@ -125,23 +124,27 @@ public class prim {
      * @param root root vertex to start Prim's algorithm
      */
     private void mstPrim(Graph g, Vertex root) {
-        heap priorityQueue = new heap(branchingFactor, n);
+        MinHeap priorityQueue = new MinHeap(branchingFactor, n);
         root.distance = 0;
         root.partOfSpanningTree = true;
-        
+
+        priorityQueue.insertValue(new Pair(root.distance, root.id));
+
         Vertex[] vertices = g.getVertices();
         for(Vertex v : vertices) {
-            priorityQueue.insertValue(new prim.heap.Node(v.distance, v.id));
+            if (!v.partOfSpanningTree) {
+                priorityQueue.insertValue(new Pair(v.distance, v.id));
+            }
         }
 
-        while (priorityQueue.heapSize != 0) {
-            prim.heap.Node u = priorityQueue.removeMin();
+        while (priorityQueue.n != 0) {
+            Pair u = priorityQueue.removeMin();
 
-            Set<Neighbor> neighbors = g.getAdjVertices(u.value);
+            Set<Neighbor> neighbors = g.getAdjVertices(u.val);
             if (neighbors != null) {
                 for (Neighbor v : neighbors) {
                     if (priorityQueue.contains(v.vertexId) && v.edgeWeight < vertices[v.vertexId].distance) {
-                        vertices[v.vertexId].parent = vertices[u.value];
+                        vertices[v.vertexId].parent = vertices[u.val];
                         vertices[v.vertexId].distance = v.edgeWeight;
                         vertices[v.vertexId].partOfSpanningTree = true;
                         priorityQueue.decreaseKey(v.vertexId, v.edgeWeight);
@@ -159,10 +162,6 @@ public class prim {
      * @return number of trees in the forest
      */
     private long calculateNumTrees(Graph g) {
-        System.out.println("Detected tree roots: " + Arrays.stream(g.vertices)
-                .filter(vertex -> vertex.parent == null)
-                .collect(Collectors.toList()));
-
         return Arrays.stream(g.vertices)
                 .filter(vertex -> vertex.parent == null)
                 .count();
@@ -181,7 +180,7 @@ public class prim {
     static class Graph {
         private ArrayList<Set<Neighbor>> adjList;
         private Vertex[] vertices;
-        
+
         private Graph(List<Set<Neighbor>> adjList, Set<Vertex> vertices) {
             this.adjList = new ArrayList<>(adjList);
             this.vertices = new Vertex[vertices.size()];
@@ -194,7 +193,7 @@ public class prim {
         Set<Neighbor> getAdjVertices(int u) {
             return adjList.get(u);
         }
-        
+
         Vertex[] getVertices(){
             return this.vertices;
         }
@@ -231,16 +230,6 @@ public class prim {
         public int hashCode() {
             return Objects.hash(id);
         }
-
-        @Override
-        public String toString() {
-            return "Vertex{" +
-                    "id=" + id +
-                    ", distance=" + distance +
-                    ", parent=" + parent +
-                    ", partOfSpanningTree=" + partOfSpanningTree +
-                    '}';
-        }
     }
 
     /**
@@ -255,8 +244,6 @@ public class prim {
             this.vertexId = vertexId;
             this.edgeWeight = edgeWeight;
         }
-
-
 
         @Override
         public int hashCode() {
@@ -284,229 +271,164 @@ public class prim {
         }
     }
 
-    /**
-     * This class constructs and tests a min-heap in which the nodes can have
-     * an arbitrary number of children, as long as the number is a power of 2.
-     *.
-     */
-    static class heap {
-        private ArrayList<Node> array = new ArrayList<>(); //array that will keep the values of the heap
-        private int heapSize = 0; // size of the heap
-        private int branchingFactor;
 
-        // Log base 2 of the branching factor (used to speed up the calculations of the indexes of the parent/children)
-        private int lgBranchingFactor;
+    // Key/value pair, used in the heap and its interface.
+    static class Pair {
+        public int key;
+        public int val;
 
-        private Integer[] vertexLocations;
+        public Pair( int k, int v ) {
+            key = k;
+            val = v;
+        }
+    }
 
-        /**
-         * Heap constructor.
-         *
-         * @param branchingFactor branching factor that is a power of 2 for efficient heap-ification.
-         * @param maxVertices maximum number of vertices that can possibly be in the heap simultaneously
-         */
-        private heap(int branchingFactor, int maxVertices) {
-            this.branchingFactor = branchingFactor;
-            this.lgBranchingFactor = (int) Math.floor(Math.log(branchingFactor) / Math.log(2));
-            this.vertexLocations = new Integer[maxVertices];
+    // Actual representation of the heap
+    static class MinHeap {
+        // Counter of comparison operations, for comparing performance.
+        private long comparisons = 0;
+
+        // Power of 2 used as the branchign factor
+        private int p;
+
+        // Representation for the heap.
+        Pair[] tree;
+
+        // Number of elements in the heap.
+        int n;
+
+        // Capacity of the heap.
+        int cap;
+
+        Integer[] vertexLocations;
+
+        // Function to compare keys, so we can also count key comparisons.
+        private boolean keyLess( Pair a, Pair b ) {
+            comparisons += 1;
+            return a.key < b.key;
         }
 
-        /**
-         * Inner class for creation of the node.
-         * A Node object represents a node of the heap, and it is composed
-         * by the key and the value.
-         */
-        static class Node {
-            private int key; // Key to be compared
-            private int value; // Value stored on the node
+        public MinHeap( int p, int numVertices ) {
+            this.p = p;
+            cap = 5;
+            n = 0;
+            tree = new Pair [ cap ];
+            vertexLocations = new Integer[numVertices];
+        }
 
-            /**
-             * Node constructor
-             *
-             * @param key field to sort by in the heap
-             * @param value integer to prioritize in the heap
-             */
-            Node(int key, int value) {
-                this.key = key;
-                this.value = value;
+        Pair removeMin() {
+            // Remove the minimum value and replace it with the last one.
+            Pair v = tree[ 0 ];
+            tree[ 0 ] = tree[ n - 1 ];
+            n -= 1;
+
+            vertexLocations[v.val] = null;
+            vertexLocations[tree[0].val] = 0;
+
+            // We need the branching factor below.
+            int branch = 1 << p;
+
+            // Push this value down until it satisfies the ordering constraint.
+            int idx = 0;
+            int child = ( idx << p ) + 1;
+            while ( child < n ) {
+                // Find index of smallest child.
+                int m = child;
+                int end = child + branch;
+                if ( end > n )
+                    end = n;
+                for ( int i = child + 1; i < end; i++ )
+                    if ( keyLess( tree[ i ], tree[ m ] ) )
+                        m = i;
+
+                // Not happy about this early return.  Would be nice to ahve it in the condition
+                // on the loop.  Return early if we hit a point where we don't have to swap.
+                if ( ! keyLess( tree[ m ], tree[ idx ] ) )
+                    return v;
+
+                // Swap the current vlaue with its smallest child
+                Pair temp = tree[ idx ];
+                tree[ idx ] = tree[ m ];
+                tree[ m ] = temp;
+
+                vertexLocations[tree[idx].val] = idx;
+                vertexLocations[tree[m].val] = m;
+
+                // Follow the value down into the tree.
+                idx = m;
+                child = ( idx << p ) + 1;
             }
 
-            /**
-             * Override the toString of the Node class to format the string output
-             * of a Node
-             */
-            @Override
-            public String toString() {
-                return String.format("%s %s", key, value);
+            return v;
+        }
+
+        void insertValue( Pair v ) {
+            if ( n >= cap ) {
+                // Enlarge the heap array and copy everything over.
+                cap *= 2;
+                Pair[] t2 = new Pair [ cap ];
+                for ( int i = 0; i < n; i++ )
+                    t2[ i ] = tree[ i ];
+                tree = t2;
+            }
+
+            // Put the new value at the end of the heap.
+            int idx = n;
+            tree[ n ] = v;
+            vertexLocations[tree[n].val] = n;
+
+            n++;
+
+            // Move it up in the heap until it's as large as its parent.
+            int par = ( idx - 1 ) >> p;
+            while ( par >= 0 && keyLess( tree[ idx ], tree[ par ] ) ) {
+                // Swap this value with its parent.
+                Pair temp = tree[ par ];
+                tree[ par ] = tree[ idx ];
+                tree[ idx ] = temp;
+
+                vertexLocations[tree[par].val] = par;
+                vertexLocations[tree[idx].val] = idx;
+
+                idx = par;
+                par = ( idx - 1 ) >> p;
             }
         }
 
-        /**
-         * Inserts the specified node into the heap at the correct position to maintain the min-heap property
-         *
-         * @param node Node to insert
-         */
-        private void insertValue(Node node) {
-            heapSize++;
-            //Add node to the end of the array
-            array.add(node);
-            vertexLocations[node.value] = array.size() - 1;
+        /** Return the number of comparisons performed. */
+        long ccount() {
+            return comparisons;
+        }
 
-            //Initiating from the bottom of the heap and going up, makes key comparisons to find the
-            //right place to insert the given node.
-            int i = heapSize - 1;
-            while (i > 0 && keysGreaterThan(array.get(parent(i)), node)) {
-                Node parent = array.get(parent(i));
-                array.set(i, parent);
-                vertexLocations[parent.value] = i;
+        void decreaseKey(int vertexId, int key) {
+            Integer idx = vertexLocations[vertexId];
+            Pair pair = tree[idx];
+
+            if (key > pair.key) {
+                throw new RuntimeException("new key is larger than current key");
+            }
+
+            pair.key = key;
+
+            int i = idx;
+            while (i > 0 && tree[parent(i)].key > pair.key) {
+                Pair temp = tree[i];
+                tree[i] = tree[parent(i)];
+                tree[parent(i)] = temp;
+
+                vertexLocations[tree[parent(i)].val] = parent(i);
+                vertexLocations[tree[i].val] = i;
 
                 i = parent(i);
             }
-            //Sets the node into the right index after finding the right position.
-            array.set(i, node);
-            vertexLocations[node.value] = i;
-        }
-
-        /**
-         * Removes and returns the node with the minimum key in the heap.
-         *
-         * @return node with the minimum key in the heap
-         */
-        private Node removeMin() {
-            //Throws exception if the heap is empty.
-            if (heapSize < 1) {
-                throw new IllegalStateException("heap underflow");
-            }
-
-            //Stores the node with the smallest key in the heap (root)
-            Node min = array.get(0);
-
-            //Replace the root with the last node and decrease the heap size
-            Node last = array.get(heapSize - 1);
-            array.set(0, last);
-
-            vertexLocations[min.value] = null;
-            vertexLocations[last.value] = 0;
-
-            heapSize--;
-
-            //Calls the Heapify operation to reposition the new root into the 
-            //right position
-            minHeapify(0);
-
-            //Returns the previous smallest node that was stored
-            return min;
         }
 
         boolean contains(int vertexId) {
             return vertexLocations[vertexId] != null;
         }
 
-        void decreaseKey(int vertexId, int key) {
-            int nodeId = vertexLocations[vertexId];
-            if (key > array.get(nodeId).key) {
-                return;
-                //throw new RuntimeException(String.format("new key is smaller than current key - old key: %s, new key: %s", array.get(nodeId).key, key));
-            }
-
-            Node node = array.get(nodeId);
-            node.key = key;
-
-            int i = nodeId;
-            while (i > 0 && array.get(parent(i)).key > array.get(i).key) {
-                exchange(i, parent(i));
-                i = parent(i);
-            }
-        }
-
-        /**
-         * Compares keys of the specified nodes and returns true if the key of node1
-         * is greater than the key of node2.
-         *
-         * This also has a side effect of incrementing the number of key comparisons
-         * during the lifetime of this heap.
-         *
-         * @param node1 Node
-         * @param node2 Node
-         * @return true if the key of node1 is greater than the key of node2
-         */
-        private boolean keysGreaterThan(Node node1, Node node2) {
-            return node1.key > node2.key;
-        }
-
-        /**
-         * Compares keys of the specified nodes and returns true if the key of node1
-         * is less than the key of node2.
-         *
-         * This also has a side effect of incrementing the number of key comparisons
-         * during the lifetime of this heap.
-         *
-         * @param node1 Node
-         * @param node2 Node
-         * @return true if the key of node1 is less than the key of node2
-         */
-        private boolean keysLessThan(Node node1, Node node2) {
-            return node1.key < node2.key;
-        }
-
-        /**
-         * Heapifies this heap starting at the specified index.
-         *
-         * @param i index to start heap-ification.
-         */
-        private void minHeapify(int i) {
-            int smallest = i;
-
-            for (int j = 1; j <= branchingFactor; j++) {
-                int childIndex = child(i, j);
-
-                if (childIndex < heapSize && keysLessThan(array.get(childIndex), array.get(smallest))) {
-                    smallest = childIndex;
-                }
-            }
-
-            if (smallest != i) {
-                exchange(i, smallest);
-                minHeapify(smallest);
-            }
-        }
-
-        /**
-         * Returns the index of the parent for the child at the ith index in the heap.
-         *
-         * @param i index of child
-         * @return the index of the parent
-         */
-        private int parent(int i) {
-            return (i - 1) >> lgBranchingFactor;
-        }
-
-        /**
-         * Returns the index of the jth child of the ith node
-         *
-         * @param i index of current node
-         * @param j jth child of the ith node
-         * @return the index of the jth child of the ith node
-         */
-        private int child(int i, int j) {
-            return (i << lgBranchingFactor) + j;
-        }
-
-        /**
-         * Swaps the elements at the specified src and dest indexes of the array
-         *
-         * @param src source index
-         * @param dest destination index
-         */
-        private void exchange(int src, int dest) {
-            Node srcNode = array.get(src);
-            Node destNode = array.get(dest);
-
-            array.set(dest, srcNode);
-            array.set(src, destNode);
-
-            vertexLocations[destNode.value] = src;
-            vertexLocations[srcNode.value] = dest;
+        int parent(int idx) {
+            return (idx - 1) >> p;
         }
     }
 }

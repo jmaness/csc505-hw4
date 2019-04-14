@@ -154,27 +154,26 @@ public class prim {
          * Initializing the priority queue.
          * Setting given vertex as root of the tree.
          */
-        MinHeap priorityQueue = new MinHeap(branchingFactor, n);
         root.distance = 0;
         root.partOfSpanningTree = true;
 
-        priorityQueue.insertValue(new Pair(root.distance, root.id)); //Inserting root int the priority queue
 
-        /*
-         * Creating array with all the vertices of graph g.
-         * This is done to be able to access the vertices in constant time
-         */
-        Vertex[] vertices = g.getVertices(); 
-        
+        Vertex[] vertices = g.getVertices();
+        List<Pair> pairs = new ArrayList<>();
+
+        pairs.add(new Pair(root.distance, root.id));
+
         /*
          * Inserting each vertex that is not part of a spanning tree
          * into the heap
          */
         for(Vertex v : vertices) {
             if (!v.partOfSpanningTree) {
-                priorityQueue.insertValue(new Pair(v.distance, v.id));
+                pairs.add(new Pair(v.distance, v.id));
             }
         }
+
+        MinHeap priorityQueue = new MinHeap(branchingFactor, n, pairs);
 
         /*
          * While there are vertices in the heap, go through the adjacency list of the vertex u with the lowest key
@@ -392,8 +391,6 @@ public class prim {
      * @author Jeremy Maness
      */
     static class MinHeap {
-       
-        private long comparisons = 0; // Counter of comparison operations, for comparing performance.
         private int p; // Power of 2 used as the branching factor
         Pair[] tree; // Representation for the heap.
         int n; // Number of elements in the heap.
@@ -401,42 +398,32 @@ public class prim {
         Integer[] vertexLocations; //array of vertices location to link vertices between the heap and the graph
 
         /**
-         * Function to compare keys, so we can also count key comparisons.
-         * 
-         * @param a Heap node
-         * @param b Heap node
-         * @return True if the key of node a is less than the key of node b
-         */
-        private boolean keyLess( Pair a, Pair b ) {
-            comparisons += 1;
-            return a.key < b.key;
-        }
-
-        /**
          * Initializes the heap
          * @param p Power of 2 used as the branching factor
          * @param numVertices Maximum number of vertices that can be stored in the heap
          */
-        public MinHeap( int p, int numVertices ) {
+        public MinHeap( int p, int numVertices, List<Pair> pairs ) {
             this.p = p;
-            cap = 5; //Initial capacity
-            n = 0; //Number of vertices
-            tree = new Pair [ cap ]; //Representation of the tree
+            cap = pairs.size(); //Initial capacity
+            n = pairs.size(); //Number of vertices
+            tree = pairs.toArray(new Pair[0]);
             vertexLocations = new Integer[numVertices];
+
+            for (int i = 0; i < tree.length; i++) {
+                vertexLocations[tree[i].val] = i;
+            }
+
+            buildMinHeap();
         }
 
-        /**
-         * Remove the minimum value from the heap and executes a heapify operation to reorganize the heap.
-         * @return the vertex with minimum key value of the heap
-         */
-        Pair removeMin() {
-            // 
-            Pair v = tree[ 0 ];
-            tree[ 0 ] = tree[ n - 1 ];
-            n -= 1;
+        private void buildMinHeap() {
+            n = tree.length;
+            for (int i = tree.length / 2; i >= 0; i--) {
+                minHeapify(i);
+            }
+        }
 
-            vertexLocations[v.val] = null;
-            vertexLocations[tree[0].val] = 0;
+        private void minHeapify(int idx) {
 
             /*
              * We need the branching factor below.
@@ -446,7 +433,6 @@ public class prim {
             /*
              * Push this value down until it satisfies the ordering constraint.
              */
-            int idx = 0;
             int child = ( idx << p ) + 1;
             while ( child < n ) {
                 // Find index of smallest child.
@@ -455,15 +441,15 @@ public class prim {
                 if ( end > n )
                     end = n;
                 for ( int i = child + 1; i < end; i++ )
-                    if ( keyLess( tree[ i ], tree[ m ] ) )
+                    if (tree[i].key < tree[m].key)
                         m = i;
 
                 /*
                  * Not happy about this early return.  Would be nice to have it in the condition
                  * on the loop.  Return early if we hit a point where we don't have to swap.
                  */
-                if ( ! keyLess( tree[ m ], tree[ idx ] ) )
-                    return v;
+                if (tree[m].key >= tree[idx].key)
+                    return;
 
                 /*
                  * Swap the current value with its smallest child
@@ -481,61 +467,23 @@ public class prim {
                 idx = m;
                 child = ( idx << p ) + 1;
             }
+        }
+
+        /**
+         * Remove the minimum value from the heap and executes a heapify operation to reorganize the heap.
+         * @return the vertex with minimum key value of the heap
+         */
+        Pair removeMin() {
+            Pair v = tree[ 0 ];
+            tree[ 0 ] = tree[ n - 1 ];
+            n -= 1;
+
+            vertexLocations[v.val] = null;
+            vertexLocations[tree[0].val] = 0;
+
+            minHeapify(0);
 
             return v;
-        }
-
-        /**
-         * Insert the given vertex node into the heap and then perfomes a heapify operation to reorganize
-         * the heap
-         * @param v Vertex node
-         */
-        void insertValue(Pair v) {
-            
-            /*
-             * If the number of vertices in the graph is larger than the capacity of the heap
-             * creates a new tree representation with twice the original capacity, copy all
-             * the nodes to the new one and then replace the orginal one.
-             */
-            if ( n >= cap ) {
-                cap *= 2;
-                Pair[] t2 = new Pair [ cap ];
-                for ( int i = 0; i < n; i++ )
-                    t2[ i ] = tree[ i ];
-                tree = t2;
-            }
-
-            
-            /**
-             * Put the new value at the end of the heap.
-             */
-            int idx = n;
-            tree[ n ] = v;
-            vertexLocations[tree[n].val] = n;
-
-            n++;
-
-            //Move it up in the heap until it's as large as its parent.
-            int par = ( idx - 1 ) >> p;
-            while ( par >= 0 && keyLess( tree[ idx ], tree[ par ] ) ) {
-                // Swap this value with its parent.
-                Pair temp = tree[ par ];
-                tree[ par ] = tree[ idx ];
-                tree[ idx ] = temp;
-
-                vertexLocations[tree[par].val] = par;
-                vertexLocations[tree[idx].val] = idx;
-
-                idx = par;
-                par = ( idx - 1 ) >> p;
-            }
-        }
-
-        /**
-         *  Return the number of comparisons performed.
-         */
-        long ccount() {
-            return comparisons;
         }
 
         /**

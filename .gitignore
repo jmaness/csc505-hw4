@@ -3,4 +3,5 @@ bin/
 
 *.iml
 .idea/
+out/
 

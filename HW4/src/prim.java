@@ -149,7 +149,7 @@ public class prim {
      * @param root root vertex to start Prim's algorithm
      */
     private void mstPrim(Graph g, Vertex root) {
-        
+
         /*
          * Initializing the priority queue.
          * Setting given vertex as root of the tree.
@@ -369,7 +369,7 @@ public class prim {
      * Key/value pair, used in the heap and its interface.
      * @author Dr. Sturgill
      */
-    static class Pair {
+    class Pair {
         public int key; //Key to organize the heap
         public int val; //Value of the heap node
 
@@ -390,12 +390,12 @@ public class prim {
      * @author Dr. Sturgill
      * @author Jeremy Maness
      */
-    static class MinHeap {
+    class MinHeap {
         private int p; // Power of 2 used as the branching factor
-        Pair[] tree; // Representation for the heap.
-        int n; // Number of elements in the heap.
-        int cap; // Capacity of the heap.
-        Integer[] vertexLocations; //array of vertices location to link vertices between the heap and the graph
+        private Pair[] tree; // Representation for the heap.
+        private int n; // Number of elements in the heap.
+        private int cap; // Capacity of the heap.
+        private Integer[] vertexLocations; //array of vertices location to link vertices between the heap and the graph
 
         /**
          * Initializes the heap
@@ -416,6 +416,13 @@ public class prim {
             buildMinHeap();
         }
 
+        /**
+         * Implements the Build-Min-Heap procedure from "Introduction to Algorithms, Third Edition"
+         * (Cormen et al. 2009, p. 157).
+         *
+         * As shown on p. 157-159, a similar asymptotic analysis shows that this is O(V).
+         *
+         */
         private void buildMinHeap() {
             n = tree.length;
             for (int i = tree.length / 2; i >= 0; i--) {
@@ -423,6 +430,12 @@ public class prim {
             }
         }
 
+        /**
+         * Min heapify procedure that pushes the node at the specified index in
+         * the heap down until the heap ordering constraint is satisfied.
+         *
+         * @param idx index of node in the heap
+         */
         private void minHeapify(int idx) {
 
             /*
@@ -471,6 +484,7 @@ public class prim {
 
         /**
          * Remove the minimum value from the heap and executes a heapify operation to reorganize the heap.
+         *
          * @return the vertex with minimum key value of the heap
          */
         Pair removeMin() {
@@ -488,6 +502,7 @@ public class prim {
 
         /**
          * Decreases the key of the given vertex in the heap
+         *
          * @param vertexId Given vertex ID
          * @param key Original vertex key value
          */
@@ -516,6 +531,7 @@ public class prim {
 
         /**
          * Search the heap for the given vertex
+         *
          * @param vertexId ID of the vertex to search
          * @return True if the vertex is in the heap
          */
@@ -525,6 +541,7 @@ public class prim {
 
         /**
          * Returns the parent of the vertex with given index
+         *
          * @param idx Vertex index
          * @return Index of the parent
          */
